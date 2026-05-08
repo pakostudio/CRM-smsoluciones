@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parrilla de Contenido — SM Soluciones</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fondo:   #f5f1eb;
+    --fondo2:  #ede9e1;
+    --blanco:  #ffffff;
+    --negro:   #1a1610;
+    --cafe:    #6b4c2a;
+    --acento:  #a07840;
+    --acento2: #c8a96e;
+    --gris:    #4a4540;
+    --gris2:   #7a746e;
+    --gris3:   #a09890;
+    --borde:   #d8d0c4;
+    --li:      #0077b5;
+    --ig:      #c13584;
+    --fb:      #1877f2;
+    --verde:   #2d6a4f;
+    --amarillo:#b5850a;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--fondo); color:var(--negro); font-family:'DM Sans',sans-serif; min-height:100vh; }
+
+  /* HEADER */
+  header { background:var(--negro); padding:2rem 3rem; display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+  .logo-area h1 { font-family:'DM Serif Display',serif; font-size:1.9rem; color:var(--acento2); letter-spacing:-0.5px; line-height:1; }
+  .logo-area p  { font-size:0.72rem; color:var(--gris3); letter-spacing:0.18em; text-transform:uppercase; margin-top:0.35rem; }
+  .sync-info { text-align:right; font-size:0.72rem; color:var(--gris2); }
+  .sync-info span { display:block; color:var(--acento2); font-weight:600; margin-top:0.2rem; }
+
+  /* CONTROLES */
+  .controls { background:var(--fondo2); padding:1.2rem 3rem; display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center; border-bottom:1px solid var(--borde); }
+  .btn-filter { padding:0.4rem 1rem; border-radius:100px; border:1px solid var(--borde); background:transparent; color:var(--gris2); font-family:'DM Sans',sans-serif; font-size:0.78rem; cursor:pointer; transition:all 0.18s; }
+  .btn-filter:hover { border-color:var(--acento); color:var(--acento); background:rgba(160,120,64,0.06); }
+  .btn-filter.active { background:var(--negro); border-color:var(--negro); color:var(--acento2); font-weight:600; }
+  .sep { width:1px; height:22px; background:var(--borde); }
+  .btn-refresh { margin-left:auto; padding:0.4rem 1.1rem; border-radius:100px; border:1px solid var(--acento); background:transparent; color:var(--acento); font-family:'DM Sans',sans-serif; font-size:0.78rem; cursor:pointer; transition:all 0.18s; display:flex; align-items:center; gap:0.4rem; }
+  .btn-refresh:hover { background:var(--acento); color:var(--blanco); }
+
+  /* STATS */
+  .stats { padding:1.2rem 3rem; display:flex; gap:3rem; background:var(--blanco); border-bottom:1px solid var(--borde); }
+  .stat-item { font-size:0.75rem; color:var(--gris2); }
+  .stat-item strong { display:block; font-size:1.6rem; font-family:'DM Serif Display',serif; color:var(--negro); line-height:1.1; }
+
+  /* LOADING */
+  .state-msg { padding:5rem 3rem; text-align:center; color:var(--gris2); }
+  .state-msg .spinner { width:32px; height:32px; border:2px solid var(--borde); border-top-color:var(--acento); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 1.5rem; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .state-msg p { font-size:0.88rem; }
+  .state-msg .hint { font-size:0.75rem; margin-top:0.5rem; opacity:0.6; }
+
+  /* SEMANAS */
+  .semanas { padding:2rem 3rem 4rem; display:flex; flex-direction:column; gap:2.5rem; }
+  .semana-titulo { font-family:'DM Serif Display',serif; font-size:1.15rem; color:var(--cafe); margin-bottom:1rem; padding-bottom:0.6rem; border-bottom:2px solid var(--borde); display:flex; align-items:center; gap:0.8rem; }
+  .semana-titulo small { font-family:'DM Sans',sans-serif; font-size:0.68rem; color:var(--gris3); font-weight:400; letter-spacing:0.12em; text-transform:uppercase; }
+
+  /* CARDS */
+  .cards-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:1rem; }
+  .card { background:var(--blanco); border:1px solid var(--borde); border-radius:10px; padding:1.3rem; transition:transform 0.18s,box-shadow 0.18s; }
+  .card:hover { transform:translateY(-2px); box-shadow:0 6px 24px rgba(107,76,42,0.08); }
+  .card.li { border-left:3px solid var(--li); }
+  .card.ig { border-left:3px solid var(--ig); }
+  .card.fb { border-left:3px solid var(--fb); }
+  .card.all { border-left:3px solid var(--acento); }
+
+  .card-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.85rem; }
+  .dia-tag { font-size:0.68rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--gris2); }
+  .red-badge { font-size:0.66rem; padding:0.18rem 0.6rem; border-radius:100px; font-weight:700; letter-spacing:0.04em; }
+  .red-badge.li  { background:rgba(0,119,181,0.1);   color:#005f94; }
+  .red-badge.ig  { background:rgba(193,53,132,0.1);  color:#a02070; }
+  .red-badge.fb  { background:rgba(24,119,242,0.1);  color:#1565c0; }
+  .red-badge.all { background:rgba(160,120,64,0.12); color:var(--cafe); }
+
+  .card-pilar   { font-size:0.65rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--acento); margin-bottom:0.3rem; font-weight:600; }
+  .card-formato { font-size:0.7rem; color:var(--gris3); margin-bottom:0.5rem; }
+  .card-tema    { font-family:'DM Serif Display',serif; font-size:1.05rem; line-height:1.4; color:var(--negro); margin-bottom:0.75rem; }
+  .card-copy    { font-size:0.76rem; color:var(--gris2); line-height:1.65; border-top:1px solid var(--fondo2); padding-top:0.7rem; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+  .card-footer  { margin-top:0.85rem; display:flex; align-items:center; justify-content:space-between; }
+
+  .estatus { font-size:0.65rem; padding:0.18rem 0.65rem; border-radius:100px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; }
+  .estatus.pendiente  { background:rgba(160,152,144,0.12); color:var(--gris2); }
+  .estatus.en-proceso { background:rgba(181,133,10,0.12);  color:#8a6008; }
+  .estatus.listo      { background:rgba(160,120,64,0.12);  color:var(--cafe); }
+  .estatus.publicado  { background:rgba(45,106,79,0.12);   color:var(--verde); }
+
+  /* INSTRUCCIONES */
+  .instrucciones { margin:0 3rem 3rem; padding:1.4rem 1.8rem; border:1px dashed var(--borde); border-radius:10px; background:var(--fondo2); }
+  .instrucciones h3 { font-family:'DM Serif Display',serif; color:var(--cafe); font-size:0.95rem; margin-bottom:0.7rem; }
+  .instrucciones p  { font-size:0.76rem; color:var(--gris2); line-height:1.7; margin-bottom:0.4rem; }
+  .col-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.7rem; }
+  .col-tag  { font-size:0.66rem; padding:0.18rem 0.55rem; background:var(--blanco); border:1px solid var(--borde); border-radius:4px; color:var(--cafe); font-family:monospace; }
+
+  /* FOOTER */
+  footer { background:var(--negro); padding:1.4rem 3rem; display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; color:var(--gris2); }
+  footer a { color:var(--acento2); text-decoration:none; }
+
+  @media (max-width:640px) {
+    header,.controls,.stats,.semanas,.instrucciones { padding-left:1.2rem; padding-right:1.2rem; }
+    .logo-area h1 { font-size:1.5rem; }
+    .stats { gap:1.5rem; flex-wrap:wrap; }
+    footer { padding:1rem 1.2rem; flex-direction:column; gap:0.5rem; text-align:center; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-area">
+    <h1>SM Soluciones</h1>
+    <p>Parrilla de Contenido Semanal</p>
+  </div>
+  <div class="sync-info">
+    Última actualización<span id="lastSync">—</span>
+  </div>
+</header>
+
+<div class="controls">
+  <button class="btn-filter active" data-filter="all">Todos</button>
+  <div class="sep"></div>
+  <button class="btn-filter" data-filter="LinkedIn">LinkedIn</button>
+  <button class="btn-filter" data-filter="Instagram">Instagram</button>
+  <button class="btn-filter" data-filter="Facebook">Facebook</button>
+  <div class="sep"></div>
+  <button class="btn-filter" data-filter="Pendiente">Pendiente</button>
+  <button class="btn-filter" data-filter="En proceso">En proceso</button>
+  <button class="btn-filter" data-filter="Listo">Listo</button>
+  <button class="btn-filter" data-filter="Publicado">Publicado</button>
+  <button class="btn-refresh" onclick="cargarDatos()">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+    Actualizar
+  </button>
+</div>
+
+<div class="stats">
+  <div class="stat-item"><strong id="statTotal">—</strong>Posts totales</div>
+  <div class="stat-item"><strong id="statPublicados">—</strong>Publicados</div>
+  <div class="stat-item"><strong id="statListos">—</strong>Listos</div>
+  <div class="stat-item"><strong id="statPendientes">—</strong>Pendientes</div>
+</div>
+
+<div id="mainContent">
+  <div class="state-msg">
+    <div class="spinner"></div>
+    <p>Cargando parrilla desde Google Sheets...</p>
+  </div>
+</div>
+
+<div class="instrucciones">
+  <h3>📋 Estructura del Google Sheet</h3>
+  <p>La primera fila debe tener exactamente estos encabezados:</p>
+  <div class="col-tags">
+    <span class="col-tag">Semana</span>
+    <span class="col-tag">Día</span>
+    <span class="col-tag">Red</span>
+    <span class="col-tag">Formato</span>
+    <span class="col-tag">Pilar</span>
+    <span class="col-tag">Tema</span>
+    <span class="col-tag">Copy</span>
+    <span class="col-tag">Estatus</span>
+  </div>
+  <p style="margin-top:0.8rem">
+    <strong style="color:var(--negro)">Red:</strong> LinkedIn / Instagram / Facebook &nbsp;·&nbsp;
+    <strong style="color:var(--negro)">Estatus:</strong> Pendiente / En proceso / Listo / Publicado
+  </p>
+</div>
+
+<footer>
+  <span>SM Soluciones · Juan Sánchez Mejorada · <a href="tel:+525529554186">+52 55 2955 4186</a></span>
+  <span>Parrilla v1.1</span>
+</footer>
+
+<script>
+  const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSHlJmEBjpmR6NT-N-UY6bZ0TnbeKYqFI-IWv-NISH79sjB6WgChj8iEvWqXlR4I2Rt2kclq7a4HMOO/pub?output=csv';
+
+  let todosLosPosts = [];
+  let filtroActivo  = 'all';
+
+  function redClass(red) {
+    if (!red) return 'all';
+    const r = red.toLowerCase();
+    if (r.includes('linkedin'))  return 'li';
+    if (r.includes('instagram')) return 'ig';
+    if (r.includes('facebook'))  return 'fb';
+    return 'all';
+  }
+
+  function estatusClass(est) {
+    if (!est) return 'pendiente';
+    const e = est.toLowerCase().replace(' ', '-');
+    return ['pendiente','en-proceso','listo','publicado'].includes(e) ? e : 'pendiente';
+  }
+
+  function parsearCSV(texto) {
+    const lineas = texto.split('\n').filter(l => l.trim());
+    if (lineas.length < 2) return [];
+    const headers = lineas[0].split(',').map(h => h.replace(/"/g,'').trim());
+    return lineas.slice(1).map(linea => {
+      const vals = [];
+      let dentro = false, actual = '';
+      for (let ch of linea) {
+        if (ch === '"') { dentro = !dentro; }
+        else if (ch === ',' && !dentro) { vals.push(actual.trim()); actual = ''; }
+        else { actual += ch; }
+      }
+      vals.push(actual.trim());
+      const obj = {};
+      headers.forEach((h, i) => { obj[h] = (vals[i] || '').replace(/^"|"$/g,''); });
+      return obj;
+    }).filter(p => p['Tema'] || p['Semana']);
+  }
+
+  function agruparPorSemana(posts) {
+    const mapa = {};
+    posts.forEach(p => {
+      const sem = p['Semana'] || 'Sin semana';
+      if (!mapa[sem]) mapa[sem] = [];
+      mapa[sem].push(p);
+    });
+    return mapa;
+  }
+
+  function renderCard(post) {
+    const rc  = redClass(post['Red']);
+    const ec  = estatusClass(post['Estatus']);
+    return `
+      <div class="card ${rc}">
+        <div class="card-top">
+          <span class="dia-tag">${post['Día'] || '—'}</span>
+          <span class="red-badge ${rc}">${post['Red'] || 'General'}</span>
+        </div>
+        <div class="card-pilar">${post['Pilar'] || ''}</div>
+        <div class="card-formato">${post['Formato'] || ''}</div>
+        <div class="card-tema">${post['Tema'] || 'Sin título'}</div>
+        ${post['Copy'] ? `<div class="card-copy">${post['Copy']}</div>` : ''}
+        <div class="card-footer">
+          <span class="estatus ${ec}">${post['Estatus'] || 'Pendiente'}</span>
+        </div>
+      </div>`;
+  }
+
+  function renderPosts(posts) {
+    const main = document.getElementById('mainContent');
+    const filtrados = filtroActivo === 'all' ? posts :
+      posts.filter(p =>
+        (p['Red']||'').toLowerCase().includes(filtroActivo.toLowerCase()) ||
+        (p['Estatus']||'').toLowerCase() === filtroActivo.toLowerCase()
+      );
+
+    document.getElementById('statTotal').textContent      = posts.length;
+    document.getElementById('statPublicados').textContent = posts.filter(p=>(p['Estatus']||'').toLowerCase()==='publicado').length;
+    document.getElementById('statListos').textContent     = posts.filter(p=>(p['Estatus']||'').toLowerCase()==='listo').length;
+    document.getElementById('statPendientes').textContent = posts.filter(p=>!p['Estatus']||(p['Estatus']||'').toLowerCase()==='pendiente').length;
+
+    if (!filtrados.length) {
+      main.innerHTML = `<div class="semanas"><div class="state-msg"><p>No hay posts con ese filtro.</p></div></div>`;
+      return;
+    }
+
+    const grupos = agruparPorSemana(filtrados);
+    let html = '<div class="semanas">';
+    Object.entries(grupos).forEach(([sem, items]) => {
+      html += `<div class="semana-bloque">
+        <div class="semana-titulo">${sem} <small>${items.length} post${items.length!==1?'s':''}</small></div>
+        <div class="cards-grid">${items.map(renderCard).join('')}</div>
+      </div>`;
+    });
+    html += '</div>';
+    main.innerHTML = html;
+  }
+
+  async function cargarDatos() {
+    document.getElementById('mainContent').innerHTML = `
+      <div class="state-msg"><div class="spinner"></div><p>Sincronizando con Google Sheets...</p></div>`;
+    try {
+      const res  = await fetch(CSV_URL + '&t=' + Date.now());
+      if (!res.ok) throw new Error('No se pudo acceder al Sheet');
+      const text = await res.text();
+      todosLosPosts = parsearCSV(text);
+
+      if (!todosLosPosts.length) {
+        document.getElementById('mainContent').innerHTML =
+          `<div class="state-msg"><p>El Sheet está vacío. Pega los datos de la parrilla y actualiza.</p></div>`;
+        return;
+      }
+
+      document.getElementById('lastSync').textContent =
+        new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+      renderPosts(todosLosPosts);
+    } catch(err) {
+      document.getElementById('mainContent').innerHTML =
+        `<div class="state-msg"><p>⚠️ No se pudo conectar al Sheet.</p><p class="hint">${err.message}</p></div>`;
+    }
+  }
+
+  document.querySelectorAll('.btn-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filtroActivo = btn.dataset.filter;
+      if (todosLosPosts.length) renderPosts(todosLosPosts);
+    });
+  });
+
+  cargarDatos();
+  setInterval(cargarDatos, 5 * 60 * 1000);
+</script>
+</body>
+</html>
