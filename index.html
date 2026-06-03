@@ -4,38 +4,44 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SM OS | Sistema Operativo de Gestión Interna</title>
+
   <style>
     :root{
-      --bg:#eef5ff;
-      --bg2:#dbeafe;
+      --bg-a:#ffffff;
+      --bg-b:#edf6ff;
+      --bg-c:#cfe3f8;
+      --nav-a:#0b3d91;
+      --nav-b:#123f75;
+      --blue:#0b5cab;
+      --blue-dark:#0b2f5b;
+      --blue-soft:#f4f9ff;
+      --line:#aac5e8;
       --card:#ffffff;
-      --ink:#0b2f5b;
-      --muted:#4f6f95;
-      --line:#bfd3ea;
-      --dark:#0b3d91;
-      --danger:#c62828;
-      --green-bg:#e8f5e9;
+      --muted:#55708f;
+      --danger:#b42318;
+      --danger-bg:#fff5f5;
       --green:#2e7d32;
+      --green-bg:#e8f5e9;
+      --yellow:#9a6700;
       --yellow-bg:#fff8e1;
-      --yellow:#b7791f;
-      --red-bg:#ffebee;
       --red:#c62828;
-      --gray-bg:#f3f4f6;
-      --gray:#374151;
-      --blue-soft:#e6f0ff;
-      --blue-line:#aac5e8;
-      --blue-accent:#0b5cab;
+      --red-bg:#ffebee;
+      --gray:#475569;
+      --gray-bg:#f1f5f9;
     }
 
     *{box-sizing:border-box}
+
     body{
       margin:0;
-      font-family:Arial, Helvetica, sans-serif;
-      background:radial-gradient(circle at top left,#ffffff 0,#eef5ff 28%,#dbeafe 100%);
-      color:var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      background:radial-gradient(circle at top left,var(--bg-a) 0%,var(--bg-b) 34%,var(--bg-c) 100%);
+      color:var(--blue-dark);
     }
 
-    button,input,textarea,select{font-family:Arial, Helvetica, sans-serif}
+    button,input,textarea,select{
+      font-family: Arial, Helvetica, sans-serif;
+    }
 
     .page{
       min-height:100vh;
@@ -49,9 +55,9 @@
 
     .card{
       background:var(--card);
-      border:1px solid var(--blue-line);
+      border:1px solid var(--line);
       border-radius:22px;
-      box-shadow:0 18px 45px rgba(11,61,145,.12);
+      box-shadow:0 18px 45px rgba(11,61,145,.13);
       padding:24px;
     }
 
@@ -63,46 +69,64 @@
 
     .small{
       font-size:12px;
-      font-weight:800;
-      letter-spacing:.04em;
+      font-weight:900;
+      letter-spacing:.06em;
       color:var(--muted);
       text-transform:uppercase;
     }
 
-    h1,h2,h3{margin-top:0}
-    h1{font-size:46px;margin-bottom:6px}
-    h2{font-size:26px}
-    h3{font-size:19px;margin-bottom:8px}
+    h1,h2,h3,strong{
+      color:var(--blue-dark);
+    }
+
+    h1{
+      font-size:46px;
+      margin:6px 0;
+      line-height:1.05;
+    }
+
+    h2{
+      font-size:26px;
+      margin:0 0 16px;
+    }
+
+    h3{
+      font-size:19px;
+      margin:0 0 8px;
+    }
 
     p{line-height:1.45}
 
     label{
       display:block;
       font-size:13px;
-      font-weight:800;
-      color:#374151;
+      font-weight:900;
+      color:var(--blue-dark);
       margin:14px 0 7px;
     }
 
     input,select,textarea{
       width:100%;
-      border:1px solid #d1d5db;
+      border:1px solid var(--line);
       border-radius:14px;
       padding:12px 14px;
       font-size:15px;
       background:#ffffff;
-      color:var(--ink);
+      color:var(--blue-dark);
     }
 
-    textarea{min-height:90px;resize:vertical}
+    textarea{
+      min-height:90px;
+      resize:vertical;
+    }
 
     .btn{
       border:0;
       border-radius:14px;
       padding:12px 18px;
-      background:linear-gradient(135deg,#0b3d91,#0b5cab);
-      color:#fff;
-      font-weight:800;
+      background:linear-gradient(135deg,var(--nav-a),var(--blue));
+      color:#ffffff;
+      font-weight:900;
       cursor:pointer;
       display:inline-flex;
       align-items:center;
@@ -113,12 +137,12 @@
     .btn:hover{opacity:.92}
 
     .btn-secondary{
-      border:1px solid #d1d5db;
+      border:1px solid var(--line);
       border-radius:14px;
       padding:11px 16px;
-      background:#ffffff;
-      color:var(--dark);
-      font-weight:800;
+      background:var(--blue-soft);
+      color:var(--blue);
+      font-weight:900;
       cursor:pointer;
     }
 
@@ -126,9 +150,9 @@
       border:1px solid #fecaca;
       border-radius:14px;
       padding:10px 14px;
-      background:#fff5f5;
+      background:var(--danger-bg);
       color:#991b1b;
-      font-weight:800;
+      font-weight:900;
       cursor:pointer;
     }
 
@@ -138,6 +162,20 @@
       align-items:center;
       gap:16px;
       margin-bottom:18px;
+      border-left:10px solid var(--blue);
+      background:linear-gradient(135deg,#ffffff 0%,#f4f9ff 100%);
+    }
+
+    .version{
+      display:inline-flex;
+      border-radius:999px;
+      padding:6px 10px;
+      margin-left:8px;
+      background:#e6f0ff;
+      color:var(--nav-a);
+      font-size:11px;
+      font-weight:900;
+      vertical-align:middle;
     }
 
     .layout{
@@ -146,25 +184,39 @@
       gap:18px;
     }
 
+    aside.card{
+      background:linear-gradient(180deg,var(--nav-a) 0%,var(--nav-b) 100%);
+      border-color:var(--nav-a);
+    }
+
     .nav button{
       width:100%;
-      border:1px solid var(--blue-line);
-      background:#ffffff;
-      color:var(--ink);
+      border:1px solid rgba(255,255,255,.24);
+      background:rgba(255,255,255,.11);
+      color:#ffffff;
       border-radius:14px;
       padding:12px;
       text-align:left;
-      font-weight:800;
+      font-weight:900;
       cursor:pointer;
       margin-bottom:10px;
     }
 
-    .nav button.active{
-      background:linear-gradient(135deg,#0b3d91,#0b5cab);
-      color:#fff;
+    .nav button:hover{
+      background:rgba(255,255,255,.18);
     }
 
-    .grid{display:grid;gap:16px}
+    .nav button.active{
+      background:#ffffff;
+      color:var(--nav-a);
+      box-shadow:0 10px 24px rgba(0,0,0,.18);
+    }
+
+    .grid{
+      display:grid;
+      gap:16px;
+    }
+
     .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
     .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
     .grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -173,12 +225,16 @@
       font-size:34px;
       font-weight:900;
       margin-top:8px;
+      color:var(--blue);
     }
 
-    .list{display:grid;gap:12px}
+    .list{
+      display:grid;
+      gap:12px;
+    }
 
     .item{
-      border:1px solid var(--blue-line);
+      border:1px solid var(--line);
       background:#ffffff;
       border-radius:18px;
       padding:16px;
@@ -222,7 +278,7 @@
 
     .table th{
       text-align:left;
-      color:var(--muted);
+      color:var(--blue);
       font-size:12px;
       padding:0 10px;
       text-transform:uppercase;
@@ -256,8 +312,8 @@
     }
 
     .kanban-col{
-      background:#f9fafb;
-      border:1px solid var(--blue-line);
+      background:#f4f9ff;
+      border:1px solid var(--line);
       border-radius:18px;
       padding:14px;
       min-height:320px;
@@ -265,7 +321,7 @@
 
     .kanban-card{
       background:#ffffff;
-      border:1px solid var(--blue-line);
+      border:1px solid var(--line);
       border-radius:16px;
       padding:14px;
       margin-bottom:10px;
@@ -275,7 +331,7 @@
     .modal-bg{
       position:fixed;
       inset:0;
-      background:rgba(17,24,39,.42);
+      background:rgba(11,47,91,.45);
       display:grid;
       place-items:center;
       padding:20px;
@@ -288,9 +344,9 @@
       max-height:90vh;
       overflow:auto;
       background:#ffffff;
-      border:1px solid var(--blue-line);
+      border:1px solid var(--line);
       border-radius:24px;
-      box-shadow:0 28px 80px rgba(17,24,39,.25);
+      box-shadow:0 28px 80px rgba(11,47,91,.28);
       padding:28px;
     }
 
@@ -303,20 +359,11 @@
     }
 
     .empty{
-      border:1px dashed #d1d5db;
+      border:1px dashed var(--line);
       border-radius:18px;
       padding:22px;
       color:var(--muted);
       background:#ffffff;
-    }
-
-    .notice{
-      background:#fff8e1;
-      border:1px solid #fde68a;
-      color:#92400e;
-      padding:12px 14px;
-      border-radius:14px;
-      font-weight:800;
     }
 
     .searchbar{
@@ -326,106 +373,6 @@
     }
 
     .searchbar input{max-width:420px}
-
-    h1, h2, h3, strong {
-      color: var(--ink);
-    }
-
-    .card {
-      backdrop-filter: blur(8px);
-    }
-
-    .nav button {
-      color: var(--blue-accent);
-    }
-
-    .nav button.active {
-      color: #ffffff;
-    }
-
-    .btn {
-      background: linear-gradient(135deg,#183b63,#2f5f8f);
-    }
-
-    .btn-secondary {
-      color: var(--blue-accent);
-      border-color: var(--blue-line);
-    }
-
-
-    body::before{
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      background:linear-gradient(90deg,rgba(11,61,145,.10),transparent 35%,rgba(11,92,171,.08));
-      z-index:-1;
-    }
-
-    .topbar{
-      border-left:8px solid #0b5cab;
-      background:linear-gradient(135deg,#ffffff 0%,#f4f9ff 100%);
-    }
-
-    aside.card{
-      background:linear-gradient(180deg,#0b3d91 0%,#123f75 100%);
-      border-color:#0b3d91;
-    }
-
-    aside.card .nav button{
-      background:rgba(255,255,255,.10);
-      color:#ffffff;
-      border-color:rgba(255,255,255,.20);
-    }
-
-    aside.card .nav button:hover{
-      background:rgba(255,255,255,.18);
-    }
-
-    aside.card .nav button.active{
-      background:#ffffff;
-      color:#0b3d91;
-      box-shadow:0 10px 25px rgba(0,0,0,.14);
-    }
-
-    .table th{
-      color:#0b5cab;
-    }
-
-    .table td{
-      border-top:1px solid #aac5e8;
-      border-bottom:1px solid #aac5e8;
-    }
-
-    .table td:first-child{
-      border-left:1px solid #aac5e8;
-    }
-
-    .table td:last-child{
-      border-right:1px solid #aac5e8;
-    }
-
-    .btn-secondary{
-      background:#f4f9ff;
-    }
-
-    .btn-danger{
-      background:#fff5f5;
-    }
-
-    .version-pill{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      border-radius:999px;
-      padding:7px 11px;
-      background:#e6f0ff;
-      color:#0b3d91;
-      font-size:12px;
-      font-weight:900;
-      margin-left:8px;
-      vertical-align:middle;
-    }
 
     @media(max-width:1050px){
       .layout,.grid-2,.grid-3,.grid-4,.kanban{grid-template-columns:1fr}
@@ -446,8 +393,28 @@
 
 <script>
 (function(){
-  const STORAGE_KEY = "sm_os_stable_v3_blue";
-  const SESSION_KEY = "sm_os_session_v3_blue";
+  const STORAGE_KEY = "sm_os_final_blue_v4";
+  const SESSION_KEY = "sm_os_final_session_v4";
+
+  const app = document.getElementById("app");
+
+  function uid(){
+    return "id_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,8);
+  }
+
+  function now(){
+    return new Date().toISOString();
+  }
+
+  function today(){
+    return new Date().toISOString().slice(0,10);
+  }
+
+  function plusDays(days){
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    return d.toISOString().slice(0,10);
+  }
 
   const seed = {
     users: [
@@ -474,38 +441,46 @@
     ["DX RX VET","Diagnóstico por Rayos X Veterinarios."]
   ];
 
-  for(const [name,description] of clientNames){
+  for (const item of clientNames) {
     const clientId = uid();
-    seed.clients.push({id:clientId,name,description,active:true,createdAt:now()});
+    seed.clients.push({
+      id: clientId,
+      name: item[0],
+      description: item[1],
+      active: true,
+      createdAt: now()
+    });
+
     const projectId = uid();
     seed.projects.push({
-      id:projectId,
-      clientId,
-      name:"Proyecto General",
-      description:"Proyecto base operativo.",
-      status:"activo",
+      id: projectId,
+      clientId: clientId,
+      name: "Proyecto General",
+      description: "Proyecto base operativo.",
+      status: "activo",
       startDate: today(),
       dueDate: plusDays(30),
       createdAt: now()
     });
   }
 
-  function addSeedTask(clientName,title,ownerUsername,dueOffset,status,priority){
-    const client = seed.clients.find(c=>c.name===clientName);
-    const project = seed.projects.find(p=>p.clientId===client.id);
-    const owner = seed.users.find(u=>u.username===ownerUsername);
+  function addSeedTask(clientName, title, ownerUsername, dueOffset, status, priority){
+    const client = seed.clients.find(function(c){ return c.name === clientName; });
+    const project = seed.projects.find(function(p){ return p.clientId === client.id; });
+    const owner = seed.users.find(function(u){ return u.username === ownerUsername; });
+
     seed.tasks.push({
-      id:uid(),
-      clientId:client.id,
-      projectId:project.id,
-      title,
-      description:"Tarea inicial de seguimiento operativo.",
-      ownerId:owner.id,
-      priority,
-      status,
-      startDate:today(),
-      dueDate:plusDays(dueOffset),
-      createdAt:now()
+      id: uid(),
+      clientId: client.id,
+      projectId: project.id,
+      title: title,
+      description: "Tarea inicial de seguimiento operativo.",
+      ownerId: owner.id,
+      priority: priority,
+      status: status,
+      startDate: today(),
+      dueDate: plusDays(dueOffset),
+      createdAt: now()
     });
   }
 
@@ -519,26 +494,6 @@
   let selectedClientId = "";
   let search = "";
 
-  const app = document.getElementById("app");
-
-  function uid(){
-    return "id_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,8);
-  }
-
-  function now(){
-    return new Date().toISOString();
-  }
-
-  function today(){
-    return new Date().toISOString().slice(0,10);
-  }
-
-  function plusDays(days){
-    const d = new Date();
-    d.setDate(d.getDate()+days);
-    return d.toISOString().slice(0,10);
-  }
-
   function loadState(){
     try{
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -546,7 +501,9 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(seed));
         return JSON.parse(JSON.stringify(seed));
       }
+
       const parsed = JSON.parse(raw);
+
       return {
         users: parsed.users || [],
         clients: parsed.clients || [],
@@ -556,7 +513,7 @@
         comments: parsed.comments || [],
         files: parsed.files || []
       };
-    }catch(e){
+    }catch(error){
       localStorage.setItem(STORAGE_KEY, JSON.stringify(seed));
       return JSON.parse(JSON.stringify(seed));
     }
@@ -570,14 +527,14 @@
     try{
       const id = sessionStorage.getItem(SESSION_KEY);
       return id ? {userId:id} : null;
-    }catch(e){
+    }catch(error){
       return null;
     }
   }
 
   function setSession(userId){
     sessionStorage.setItem(SESSION_KEY, userId);
-    session = {userId};
+    session = {userId:userId};
   }
 
   function clearSession(){
@@ -587,7 +544,7 @@
 
   function currentUser(){
     if(!session) return null;
-    return state.users.find(u=>u.id===session.userId) || null;
+    return state.users.find(function(user){ return user.id === session.userId; }) || null;
   }
 
   function escapeHtml(value){
@@ -603,7 +560,7 @@
   }
 
   function byId(collection,id){
-    return collection.find(item=>item.id===id) || null;
+    return collection.find(function(item){ return item.id === id; }) || null;
   }
 
   function clientName(id){
@@ -639,9 +596,9 @@
   }
 
   function trafficText(color){
-    if(color==="green") return "En tiempo";
-    if(color==="yellow") return "Próxima";
-    if(color==="red") return "Crítica";
+    if(color === "green") return "En tiempo";
+    if(color === "yellow") return "Próxima";
+    if(color === "red") return "Crítica";
     return "Vencida";
   }
 
@@ -655,29 +612,33 @@
     return map[status] || status;
   }
 
-  function filteredTasks(){
-    let list = state.tasks.slice();
-    if(selectedClientId){
-      list = list.filter(t=>t.clientId===selectedClientId);
-    }
-    if(search.trim()){
-      const q = normalize(search);
-      list = list.filter(t =>
-        normalize(t.title).includes(q) ||
-        normalize(t.description).includes(q) ||
-        normalize(clientName(t.clientId)).includes(q) ||
-        normalize(userName(t.ownerId)).includes(q)
-      );
-    }
-    return list;
+  function normalize(str){
+    return String(str || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
   }
 
-  function normalize(str){
-    return String(str||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  function filteredTasks(){
+    let list = state.tasks.slice();
+
+    if(selectedClientId){
+      list = list.filter(function(task){ return task.clientId === selectedClientId; });
+    }
+
+    if(search.trim()){
+      const q = normalize(search);
+      list = list.filter(function(task){
+        return normalize(task.title).includes(q) ||
+               normalize(task.description).includes(q) ||
+               normalize(clientName(task.clientId)).includes(q) ||
+               normalize(userName(task.ownerId)).includes(q);
+      });
+    }
+
+    return list;
   }
 
   function render(){
     const user = currentUser();
+
     if(!user){
       renderLogin();
       return;
@@ -689,7 +650,7 @@
     app.innerHTML = `
       <header class="card topbar">
         <div>
-          <div class="small">SM OS <span class="version-pill">v3 azul premium</span></div>
+          <div class="small">SM OS <span class="version">v4 azul premium</span></div>
           <h1 style="margin:4px 0 0;">${escapeHtml(activeClient)}</h1>
           <p style="margin:6px 0 0;color:var(--muted);">${escapeHtml(user.name)} · ${escapeHtml(user.role)}</p>
         </div>
@@ -723,6 +684,7 @@
 
   function renderLogin(message){
     app.className = "page center";
+
     app.innerHTML = `
       <form class="card login-card" id="loginForm">
         <div class="small">SM SOLUCIONES</div>
@@ -735,7 +697,7 @@
         <label>PIN</label>
         <input id="loginPin" type="password" value="1234">
 
-        ${message ? `<p class="error" style="color:var(--danger);font-weight:800;">${escapeHtml(message)}</p>` : ""}
+        ${message ? `<p style="color:var(--danger);font-weight:900;">${escapeHtml(message)}</p>` : ""}
 
         <br><br>
         <button class="btn" type="submit" style="width:100%;">Entrar</button>
@@ -746,34 +708,40 @@
 
     document.getElementById("loginForm").addEventListener("submit", function(event){
       event.preventDefault();
+
       const username = document.getElementById("loginUser").value.trim();
       const pin = document.getElementById("loginPin").value.trim();
-      const user = state.users.find(u=>u.username===username && u.pin===pin && u.active);
+
+      const user = state.users.find(function(item){
+        return item.username === username && item.pin === pin && item.active;
+      });
+
       if(!user){
         renderLogin("Usuario o PIN incorrecto.");
         return;
       }
+
       setSession(user.id);
       render();
     });
   }
 
   function navButton(id,label){
-    return `<button class="${view===id ? "active" : ""}" onclick="SM.setView('${id}')">${label}</button>`;
+    return `<button class="${view === id ? "active" : ""}" onclick="SM.setView('${id}')">${label}</button>`;
   }
 
   function renderView(){
     const content = document.getElementById("content");
     if(!content) return;
 
-    if(view==="dashboard") renderDashboard(content);
-    if(view==="clientes") renderClients(content);
-    if(view==="proyectos") renderProjects(content);
-    if(view==="tareas") renderTasks(content);
-    if(view==="kanban") renderKanban(content);
-    if(view==="calendario") renderCalendar(content);
-    if(view==="reportes") renderReports(content);
-    if(view==="usuarios") renderUsers(content);
+    if(view === "dashboard") renderDashboard(content);
+    if(view === "clientes") renderClients(content);
+    if(view === "proyectos") renderProjects(content);
+    if(view === "tareas") renderTasks(content);
+    if(view === "kanban") renderKanban(content);
+    if(view === "calendario") renderCalendar(content);
+    if(view === "reportes") renderReports(content);
+    if(view === "usuarios") renderUsers(content);
   }
 
   function stat(label,value){
@@ -798,8 +766,8 @@
   }
 
   function renderDashboard(content){
-    const open = state.tasks.filter(t=>t.status!=="terminada").length;
-    const critical = state.tasks.filter(t=>["red","gray"].includes(traffic(t))).length;
+    const open = state.tasks.filter(function(task){ return task.status !== "terminada"; }).length;
+    const critical = state.tasks.filter(function(task){ return ["red","gray"].includes(traffic(task)); }).length;
 
     content.innerHTML = `
       <div class="grid">
@@ -820,32 +788,37 @@
 
   function clientCards(){
     if(!state.clients.length) return `<div class="empty">Sin clientes registrados.</div>`;
+
     return `
       <div class="list">
-        ${state.clients.map(client=>`
-          <div class="item row">
-            <div>
-              <strong>${escapeHtml(client.name)}</strong>
-              <p style="margin:6px 0 0;color:var(--muted);">${escapeHtml(client.description)}</p>
+        ${state.clients.map(function(client){
+          return `
+            <div class="item row">
+              <div>
+                <strong>${escapeHtml(client.name)}</strong>
+                <p style="margin:6px 0 0;color:var(--muted);">${escapeHtml(client.description)}</p>
+              </div>
+              <button class="btn-secondary" onclick="SM.selectClient('${client.id}')">Ver</button>
             </div>
-            <button class="btn-secondary" onclick="SM.selectClient('${client.id}')">Ver</button>
-          </div>
-        `).join("")}
+          `;
+        }).join("")}
       </div>
     `;
   }
 
   function taskCards(list){
     if(!list.length) return `<div class="empty">Sin tareas registradas.</div>`;
+
     return `
       <div class="list">
-        ${list.map(task=>taskCard(task)).join("")}
+        ${list.map(function(task){ return taskCard(task); }).join("")}
       </div>
     `;
   }
 
   function taskCard(task){
     const color = traffic(task);
+
     return `
       <div class="item">
         <div class="row">
@@ -874,38 +847,42 @@
       <table class="table">
         <thead><tr><th>Cliente</th><th>Descripción</th><th>Proyectos</th><th>Acciones</th></tr></thead>
         <tbody>
-          ${state.clients.map(client=>`
-            <tr>
-              <td><strong>${escapeHtml(client.name)}</strong></td>
-              <td>${escapeHtml(client.description)}</td>
-              <td>${state.projects.filter(p=>p.clientId===client.id).length}</td>
-              <td>
-                <button class="btn-secondary" onclick="SM.selectClient('${client.id}')">Abrir</button>
-                <button class="btn-danger" onclick="SM.deleteRecord('clients','${client.id}')">Borrar</button>
-              </td>
-            </tr>
-          `).join("")}
+          ${state.clients.map(function(client){
+            return `
+              <tr>
+                <td><strong>${escapeHtml(client.name)}</strong></td>
+                <td>${escapeHtml(client.description)}</td>
+                <td>${state.projects.filter(function(project){ return project.clientId === client.id; }).length}</td>
+                <td>
+                  <button class="btn-secondary" onclick="SM.selectClient('${client.id}')">Abrir</button>
+                  <button class="btn-danger" onclick="SM.deleteRecord('clients','${client.id}')">Borrar</button>
+                </td>
+              </tr>
+            `;
+          }).join("")}
         </tbody>
       </table>
     `);
   }
 
   function renderProjects(content){
-    const list = selectedClientId ? state.projects.filter(p=>p.clientId===selectedClientId) : state.projects;
+    const list = selectedClientId ? state.projects.filter(function(project){ return project.clientId === selectedClientId; }) : state.projects;
 
     content.innerHTML = panel("Proyectos", "Nuevo proyecto", "SM.openProjectModal()", `
       <table class="table">
         <thead><tr><th>Proyecto</th><th>Cliente</th><th>Estatus</th><th>Fechas</th><th>Acciones</th></tr></thead>
         <tbody>
-          ${list.map(project=>`
-            <tr>
-              <td><strong>${escapeHtml(project.name)}</strong><br><span class="small">${escapeHtml(project.description)}</span></td>
-              <td>${escapeHtml(clientName(project.clientId))}</td>
-              <td>${escapeHtml(project.status)}</td>
-              <td>${escapeHtml(project.startDate || "-")} → ${escapeHtml(project.dueDate || "-")}</td>
-              <td><button class="btn-danger" onclick="SM.deleteRecord('projects','${project.id}')">Borrar</button></td>
-            </tr>
-          `).join("")}
+          ${list.map(function(project){
+            return `
+              <tr>
+                <td><strong>${escapeHtml(project.name)}</strong><br><span class="small">${escapeHtml(project.description)}</span></td>
+                <td>${escapeHtml(clientName(project.clientId))}</td>
+                <td>${escapeHtml(project.status)}</td>
+                <td>${escapeHtml(project.startDate || "-")} → ${escapeHtml(project.dueDate || "-")}</td>
+                <td><button class="btn-danger" onclick="SM.deleteRecord('projects','${project.id}')">Borrar</button></td>
+              </tr>
+            `;
+          }).join("")}
         </tbody>
       </table>
     `);
@@ -931,47 +908,58 @@
 
     content.innerHTML = panel("Kanban", "Nueva tarea", "SM.openTaskModal()", `
       <div class="kanban">
-        ${columns.map(([key,label])=>`
-          <div class="kanban-col">
-            <h3>${escapeHtml(label)}</h3>
-            ${filteredTasks().filter(t=>t.status===key).map(task=>`
-              <div class="kanban-card" onclick="SM.openTaskDetail('${task.id}')">
-                <span class="badge ${traffic(task)}">${trafficText(traffic(task))}</span>
-                <h3>${escapeHtml(task.title)}</h3>
-                <p class="small">${escapeHtml(clientName(task.clientId))} · ${escapeHtml(userName(task.ownerId))}</p>
-              </div>
-            `).join("") || `<div class="empty">Sin tareas.</div>`}
-          </div>
-        `).join("")}
+        ${columns.map(function(column){
+          const key = column[0];
+          const label = column[1];
+
+          return `
+            <div class="kanban-col">
+              <h3>${escapeHtml(label)}</h3>
+              ${filteredTasks().filter(function(task){ return task.status === key; }).map(function(task){
+                return `
+                  <div class="kanban-card" onclick="SM.openTaskDetail('${task.id}')">
+                    <span class="badge ${traffic(task)}">${trafficText(traffic(task))}</span>
+                    <h3>${escapeHtml(task.title)}</h3>
+                    <p class="small">${escapeHtml(clientName(task.clientId))} · ${escapeHtml(userName(task.ownerId))}</p>
+                  </div>
+                `;
+              }).join("") || `<div class="empty">Sin tareas.</div>`}
+            </div>
+          `;
+        }).join("")}
       </div>
     `);
   }
 
   function renderCalendar(content){
-    const list = filteredTasks().slice().sort((a,b)=>String(a.dueDate||"").localeCompare(String(b.dueDate||"")));
+    const list = filteredTasks().slice().sort(function(a,b){
+      return String(a.dueDate || "").localeCompare(String(b.dueDate || ""));
+    });
 
     content.innerHTML = panel("Calendario de vencimientos", "Nueva tarea", "SM.openTaskModal()", `
       <table class="table">
         <thead><tr><th>Fecha</th><th>Tarea</th><th>Cliente</th><th>Responsable</th><th>Semáforo</th></tr></thead>
         <tbody>
-          ${list.map(task=>`
-            <tr>
-              <td>${escapeHtml(task.dueDate || "Sin fecha")}</td>
-              <td><strong>${escapeHtml(task.title)}</strong></td>
-              <td>${escapeHtml(clientName(task.clientId))}</td>
-              <td>${escapeHtml(userName(task.ownerId))}</td>
-              <td><span class="badge ${traffic(task)}">${trafficText(traffic(task))}</span></td>
-            </tr>
-          `).join("")}
+          ${list.map(function(task){
+            return `
+              <tr>
+                <td>${escapeHtml(task.dueDate || "Sin fecha")}</td>
+                <td><strong>${escapeHtml(task.title)}</strong></td>
+                <td>${escapeHtml(clientName(task.clientId))}</td>
+                <td>${escapeHtml(userName(task.ownerId))}</td>
+                <td><span class="badge ${traffic(task)}">${trafficText(traffic(task))}</span></td>
+              </tr>
+            `;
+          }).join("")}
         </tbody>
       </table>
     `);
   }
 
   function renderReports(content){
-    const open = state.tasks.filter(t=>t.status!=="terminada").length;
-    const done = state.tasks.filter(t=>t.status==="terminada").length;
-    const critical = state.tasks.filter(t=>["red","gray"].includes(traffic(t))).length;
+    const open = state.tasks.filter(function(task){ return task.status !== "terminada"; }).length;
+    const done = state.tasks.filter(function(task){ return task.status === "terminada"; }).length;
+    const critical = state.tasks.filter(function(task){ return ["red","gray"].includes(traffic(task)); }).length;
 
     content.innerHTML = `
       <div class="grid">
@@ -986,14 +974,15 @@
           <table class="table">
             <thead><tr><th>Cliente</th><th>Tareas</th><th>Abiertas</th><th>Terminadas</th></tr></thead>
             <tbody>
-              ${state.clients.map(client=>{
-                const list = state.tasks.filter(t=>t.clientId===client.id);
+              ${state.clients.map(function(client){
+                const list = state.tasks.filter(function(task){ return task.clientId === client.id; });
+
                 return `
                   <tr>
                     <td><strong>${escapeHtml(client.name)}</strong></td>
                     <td>${list.length}</td>
-                    <td>${list.filter(t=>t.status!=="terminada").length}</td>
-                    <td>${list.filter(t=>t.status==="terminada").length}</td>
+                    <td>${list.filter(function(task){ return task.status !== "terminada"; }).length}</td>
+                    <td>${list.filter(function(task){ return task.status === "terminada"; }).length}</td>
                   </tr>
                 `;
               }).join("")}
@@ -1005,13 +994,14 @@
           <table class="table">
             <thead><tr><th>Responsable</th><th>Tareas</th><th>Críticas/vencidas</th></tr></thead>
             <tbody>
-              ${state.users.map(user=>{
-                const list = state.tasks.filter(t=>t.ownerId===user.id);
+              ${state.users.map(function(user){
+                const list = state.tasks.filter(function(task){ return task.ownerId === user.id; });
+
                 return `
                   <tr>
                     <td><strong>${escapeHtml(user.name)}</strong></td>
                     <td>${list.length}</td>
-                    <td>${list.filter(t=>["red","gray"].includes(traffic(t))).length}</td>
+                    <td>${list.filter(function(task){ return ["red","gray"].includes(traffic(task)); }).length}</td>
                   </tr>
                 `;
               }).join("")}
@@ -1027,18 +1017,20 @@
       <table class="table">
         <thead><tr><th>Nombre</th><th>Usuario</th><th>PIN</th><th>Rol</th><th>Acciones</th></tr></thead>
         <tbody>
-          ${state.users.map(user=>`
-            <tr>
-              <td><strong>${escapeHtml(user.name)}</strong></td>
-              <td>${escapeHtml(user.username)}</td>
-              <td>${escapeHtml(user.pin)}</td>
-              <td>${escapeHtml(user.role)}</td>
-              <td>
-                <button class="btn-secondary" onclick="SM.openEditUserModal('${user.id}')">Editar usuario</button>
-                <button class="btn-danger" onclick="SM.deleteRecord('users','${user.id}')">Borrar</button>
-              </td>
-            </tr>
-          `).join("")}
+          ${state.users.map(function(user){
+            return `
+              <tr>
+                <td><strong>${escapeHtml(user.name)}</strong></td>
+                <td>${escapeHtml(user.username)}</td>
+                <td>${escapeHtml(user.pin)}</td>
+                <td>${escapeHtml(user.role)}</td>
+                <td>
+                  <button class="btn-secondary" onclick="SM.openEditUserModal('${user.id}')">Editar usuario</button>
+                  <button class="btn-danger" onclick="SM.deleteRecord('users','${user.id}')">Borrar</button>
+                </td>
+              </tr>
+            `;
+          }).join("")}
         </tbody>
       </table>
     `);
@@ -1086,7 +1078,12 @@
       <div>
         <label>${escapeHtml(label)}</label>
         <select name="${escapeHtml(name)}">
-          ${options.map(([value,label])=>`<option value="${escapeHtml(value)}" ${selected===value ? "selected" : ""}>${escapeHtml(label)}</option>`).join("")}
+          ${options.map(function(option){
+            const value = option[0];
+            const label = option[1];
+
+            return `<option value="${escapeHtml(value)}" ${selected === value ? "selected" : ""}>${escapeHtml(label)}</option>`;
+          }).join("")}
         </select>
       </div>
     `;
@@ -1095,9 +1092,11 @@
   function getFormData(form){
     const data = new FormData(form);
     const obj = {};
-    for(const [key,value] of data.entries()){
-      obj[key] = String(value).trim();
+
+    for(const pair of data.entries()){
+      obj[pair[0]] = String(pair[1]).trim();
     }
+
     return obj;
   }
 
@@ -1109,34 +1108,35 @@
   }
 
   window.SM = {
-    setView(id){
+    setView:function(id){
       view = id;
       render();
     },
 
-    setSearch(value){
+    setSearch:function(value){
       search = value;
       renderView();
     },
 
-    selectClient(id){
+    selectClient:function(id){
       selectedClientId = id;
       view = "tareas";
       render();
     },
 
-    clearClient(){
+    clearClient:function(){
       selectedClientId = "";
       render();
     },
 
-    logout(){
+    logout:function(){
       clearSession();
       render();
     },
 
-    resetDemo(){
+    resetDemo:function(){
       if(!confirm("¿Reiniciar demo y borrar datos locales?")) return;
+
       localStorage.setItem(STORAGE_KEY, JSON.stringify(seed));
       clearSession();
       state = loadState();
@@ -1146,9 +1146,9 @@
       render();
     },
 
-    closeModal,
+    closeModal: closeModal,
 
-    openClientModal(){
+    openClientModal:function(){
       openModal("Nuevo cliente", `
         <form id="clientForm" class="grid">
           ${input("name","Nombre del cliente")}
@@ -1157,21 +1157,29 @@
         </form>
       `);
 
-      attachSubmit("clientForm", data=>{
+      attachSubmit("clientForm", function(data){
         if(!data.name) return alert("Falta el nombre del cliente.");
-        state.clients.push({id:uid(),name:data.name,description:data.description,active:true,createdAt:now()});
+
+        state.clients.push({
+          id:uid(),
+          name:data.name,
+          description:data.description,
+          active:true,
+          createdAt:now()
+        });
+
         saveState();
         closeModal();
         render();
       });
     },
 
-    openProjectModal(){
+    openProjectModal:function(){
       if(!state.clients.length) return alert("Primero crea un cliente.");
 
       openModal("Nuevo proyecto", `
         <form id="projectForm" class="grid">
-          ${select("clientId","Cliente",state.clients.map(c=>[c.id,c.name]),selectedClientId || state.clients[0].id)}
+          ${select("clientId","Cliente",state.clients.map(function(c){ return [c.id,c.name]; }),selectedClientId || state.clients[0].id)}
           ${input("name","Nombre del proyecto")}
           ${textarea("description","Descripción")}
           ${input("startDate","Fecha de inicio","date",today())}
@@ -1180,8 +1188,9 @@
         </form>
       `);
 
-      attachSubmit("projectForm", data=>{
+      attachSubmit("projectForm", function(data){
         if(!data.clientId || !data.name) return alert("Faltan datos del proyecto.");
+
         state.projects.push({
           id:uid(),
           clientId:data.clientId,
@@ -1192,13 +1201,14 @@
           dueDate:data.dueDate || "",
           createdAt:now()
         });
+
         saveState();
         closeModal();
         render();
       });
     },
 
-    openUserModal(){
+    openUserModal:function(){
       openModal("Nuevo usuario", `
         <form id="userForm" class="grid">
           ${input("name","Nombre")}
@@ -1214,27 +1224,83 @@
         </form>
       `);
 
-      attachSubmit("userForm", data=>{
+      attachSubmit("userForm", function(data){
         if(!data.name || !data.username || !data.pin) return alert("Faltan datos del usuario.");
-        if(state.users.some(u=>u.username===data.username)) return alert("Ese usuario ya existe.");
-        state.users.push({id:uid(),name:data.name,username:data.username,pin:data.pin,role:data.role,active:true,createdAt:now()});
+
+        const duplicate = state.users.some(function(user){
+          return user.username === data.username;
+        });
+
+        if(duplicate) return alert("Ese usuario ya existe.");
+
+        state.users.push({
+          id:uid(),
+          name:data.name,
+          username:data.username,
+          pin:data.pin,
+          role:data.role,
+          active:true,
+          createdAt:now()
+        });
+
         saveState();
         closeModal();
         render();
       });
     },
 
-    openTaskModal(){
+    openEditUserModal:function(id){
+      const user = byId(state.users,id);
+      if(!user) return;
+
+      openModal("Editar usuario", `
+        <form id="editUserForm" class="grid">
+          ${input("name","Nombre","text",user.name)}
+          ${input("username","Usuario","text",user.username)}
+          ${input("pin","PIN","text",user.pin)}
+          ${select("role","Rol",[
+            ["Administrador General","Administrador General"],
+            ["Responsable","Responsable"],
+            ["Colaborador","Colaborador"],
+            ["Consulta","Consulta"]
+          ],user.role)}
+          <button class="btn" type="submit">Guardar cambios</button>
+        </form>
+      `);
+
+      attachSubmit("editUserForm", function(data){
+        if(!data.name || !data.username || !data.pin) return alert("Faltan datos del usuario.");
+
+        const duplicate = state.users.some(function(item){
+          return item.username === data.username && item.id !== id;
+        });
+
+        if(duplicate) return alert("Ese usuario ya existe.");
+
+        user.name = data.name;
+        user.username = data.username;
+        user.pin = data.pin;
+        user.role = data.role;
+
+        saveState();
+        closeModal();
+        render();
+      });
+    },
+
+    openTaskModal:function(){
       if(!state.clients.length) return alert("Primero crea un cliente.");
       if(!state.users.length) return alert("Primero crea un usuario.");
 
       const clientId = selectedClientId || state.clients[0].id;
-      let projectOptions = state.projects.filter(p=>p.clientId===clientId);
+      let projectOptions = state.projects.filter(function(project){ return project.clientId === clientId; });
+
       if(!projectOptions.length){
         const projectId = uid();
+
         state.projects.push({
           id:projectId,
-          clientId,
+          clientId:clientId,
           name:"Proyecto General",
           description:"Proyecto base operativo.",
           status:"activo",
@@ -1242,17 +1308,18 @@
           dueDate:plusDays(30),
           createdAt:now()
         });
+
         saveState();
-        projectOptions = state.projects.filter(p=>p.clientId===clientId);
+        projectOptions = state.projects.filter(function(project){ return project.clientId === clientId; });
       }
 
       openModal("Nueva tarea", `
         <form id="taskForm" class="grid">
-          ${select("clientId","Cliente",state.clients.map(c=>[c.id,c.name]),clientId)}
-          ${select("projectId","Proyecto",state.projects.map(p=>[p.id,`${projectName(p.id)} · ${clientName(p.clientId)}`]),projectOptions[0].id)}
+          ${select("clientId","Cliente",state.clients.map(function(c){ return [c.id,c.name]; }),clientId)}
+          ${select("projectId","Proyecto",state.projects.map(function(p){ return [p.id, projectName(p.id) + " · " + clientName(p.clientId)]; }),projectOptions[0].id)}
           ${input("title","Título de la tarea")}
           ${textarea("description","Descripción")}
-          ${select("ownerId","Responsable",state.users.map(u=>[u.id,u.name]),state.users[0].id)}
+          ${select("ownerId","Responsable",state.users.map(function(u){ return [u.id,u.name]; }),state.users[0].id)}
           ${select("priority","Prioridad",[["baja","Baja"],["media","Media"],["alta","Alta"],["critica","Crítica"]],"media")}
           ${select("status","Estatus",[["pendiente","Pendiente"],["en_proceso","En proceso"],["en_revision","En revisión"],["terminada","Terminada"]],"pendiente")}
           ${input("startDate","Fecha de inicio","date",today())}
@@ -1261,8 +1328,9 @@
         </form>
       `);
 
-      attachSubmit("taskForm", data=>{
+      attachSubmit("taskForm", function(data){
         if(!data.title) return alert("Falta el título de la tarea.");
+
         state.tasks.push({
           id:uid(),
           clientId:data.clientId,
@@ -1276,19 +1344,20 @@
           dueDate:data.dueDate,
           createdAt:now()
         });
+
         saveState();
         closeModal();
         render();
       });
     },
 
-    openTaskDetail(id){
+    openTaskDetail:function(id){
       const task = byId(state.tasks,id);
       if(!task) return;
 
-      const subs = state.subtasks.filter(s=>s.taskId===id);
-      const comms = state.comments.filter(c=>c.taskId===id);
-      const taskFiles = state.files.filter(f=>f.taskId===id);
+      const subs = state.subtasks.filter(function(sub){ return sub.taskId === id; });
+      const comms = state.comments.filter(function(comment){ return comment.taskId === id; });
+      const taskFiles = state.files.filter(function(file){ return file.taskId === id; });
 
       openModal("Detalle de tarea", `
         <div class="small">${escapeHtml(clientName(task.clientId))} · ${escapeHtml(projectName(task.projectId))}</div>
@@ -1306,56 +1375,72 @@
         <hr style="border:0;border-top:1px solid var(--line);margin:20px 0;">
 
         <h3>Subtareas</h3>
-        ${subs.length ? subs.map(sub=>`
-          <div class="item">
-            <strong>${escapeHtml(sub.title)}</strong>
-            <p class="small">${escapeHtml(userName(sub.ownerId))} · ${escapeHtml(statusText(sub.status))} · ${escapeHtml(sub.dueDate || "sin fecha")}</p>
-          </div>
-        `).join("") : `<div class="empty">Sin subtareas.</div>`}
+        ${subs.length ? subs.map(function(sub){
+          return `
+            <div class="item">
+              <strong>${escapeHtml(sub.title)}</strong>
+              <p class="small">${escapeHtml(userName(sub.ownerId))} · ${escapeHtml(statusText(sub.status))} · ${escapeHtml(sub.dueDate || "sin fecha")}</p>
+            </div>
+          `;
+        }).join("") : `<div class="empty">Sin subtareas.</div>`}
 
         <h3 style="margin-top:20px;">Comentarios</h3>
-        ${comms.length ? comms.map(comment=>`
-          <div class="item">
-            <strong>${escapeHtml(userName(comment.userId))}</strong>
-            <p>${escapeHtml(comment.text)}</p>
-            <p class="small">${new Date(comment.createdAt).toLocaleString()}</p>
-          </div>
-        `).join("") : `<div class="empty">Sin comentarios.</div>`}
+        ${comms.length ? comms.map(function(comment){
+          return `
+            <div class="item">
+              <strong>${escapeHtml(userName(comment.userId))}</strong>
+              <p>${escapeHtml(comment.text)}</p>
+              <p class="small">${new Date(comment.createdAt).toLocaleString()}</p>
+            </div>
+          `;
+        }).join("") : `<div class="empty">Sin comentarios.</div>`}
 
         <h3 style="margin-top:20px;">Archivos / entregables</h3>
-        ${taskFiles.length ? taskFiles.map(file=>`
-          <div class="item">
-            <strong>${escapeHtml(file.name)}</strong>
-            <p class="small">${escapeHtml(file.type || "Archivo")} · v${escapeHtml(file.version || 1)}</p>
-            <a href="${escapeHtml(file.url)}" target="_blank" rel="noopener">Abrir enlace</a>
-          </div>
-        `).join("") : `<div class="empty">Sin entregables.</div>`}
+        ${taskFiles.length ? taskFiles.map(function(file){
+          return `
+            <div class="item">
+              <strong>${escapeHtml(file.name)}</strong>
+              <p class="small">${escapeHtml(file.type || "Archivo")} · v${escapeHtml(file.version || 1)}</p>
+              <a href="${escapeHtml(file.url)}" target="_blank" rel="noopener">Abrir enlace</a>
+            </div>
+          `;
+        }).join("") : `<div class="empty">Sin entregables.</div>`}
       `);
     },
 
-    openSubtaskModal(taskId){
+    openSubtaskModal:function(taskId){
       closeModal();
 
       openModal("Nueva subtarea", `
         <form id="subtaskForm" class="grid">
           ${input("title","Título de la subtarea")}
-          ${select("ownerId","Responsable",state.users.map(u=>[u.id,u.name]),state.users[0].id)}
+          ${select("ownerId","Responsable",state.users.map(function(u){ return [u.id,u.name]; }),state.users[0].id)}
           ${select("status","Estatus",[["pendiente","Pendiente"],["en_proceso","En proceso"],["en_revision","En revisión"],["terminada","Terminada"]],"pendiente")}
           ${input("dueDate","Fecha término","date",plusDays(5))}
           <button class="btn" type="submit">Guardar subtarea</button>
         </form>
       `);
 
-      attachSubmit("subtaskForm", data=>{
+      attachSubmit("subtaskForm", function(data){
         if(!data.title) return alert("Falta el título.");
-        state.subtasks.push({id:uid(),taskId,title:data.title,ownerId:data.ownerId,status:data.status,dueDate:data.dueDate,createdAt:now()});
+
+        state.subtasks.push({
+          id:uid(),
+          taskId:taskId,
+          title:data.title,
+          ownerId:data.ownerId,
+          status:data.status,
+          dueDate:data.dueDate,
+          createdAt:now()
+        });
+
         saveState();
         closeModal();
-        this.openTaskDetail(taskId);
+        SM.openTaskDetail(taskId);
       });
     },
 
-    openCommentModal(taskId){
+    openCommentModal:function(taskId){
       closeModal();
 
       openModal("Nuevo comentario", `
@@ -1365,16 +1450,24 @@
         </form>
       `);
 
-      attachSubmit("commentForm", data=>{
+      attachSubmit("commentForm", function(data){
         if(!data.text) return alert("Falta el comentario.");
-        state.comments.push({id:uid(),taskId,userId:currentUser().id,text:data.text,createdAt:now()});
+
+        state.comments.push({
+          id:uid(),
+          taskId:taskId,
+          userId:currentUser().id,
+          text:data.text,
+          createdAt:now()
+        });
+
         saveState();
         closeModal();
-        this.openTaskDetail(taskId);
+        SM.openTaskDetail(taskId);
       });
     },
 
-    openFileModal(taskId){
+    openFileModal:function(taskId){
       closeModal();
 
       openModal("Nuevo entregable", `
@@ -1387,86 +1480,67 @@
         </form>
       `);
 
-      attachSubmit("fileForm", data=>{
+      attachSubmit("fileForm", function(data){
         if(!data.name || !data.url) return alert("Faltan datos del archivo.");
-        state.files.push({id:uid(),taskId,userId:currentUser().id,name:data.name,url:data.url,type:data.type,version:data.version || 1,createdAt:now()});
-        saveState();
-        closeModal();
-        this.openTaskDetail(taskId);
-      });
-    },
 
-
-    openEditUserModal(id){
-      const user = byId(state.users,id);
-      if(!user) return;
-
-      openModal("Editar usuario", `
-        <form id="editUserForm" class="grid">
-          ${input("name","Nombre", "text", user.name)}
-          ${input("username","Usuario", "text", user.username)}
-          ${input("pin","PIN", "text", user.pin)}
-          ${select("role","Rol",[
-            ["Administrador General","Administrador General"],
-            ["Responsable","Responsable"],
-            ["Colaborador","Colaborador"],
-            ["Consulta","Consulta"]
-          ], user.role)}
-          <button class="btn" type="submit">Guardar cambios</button>
-        </form>
-      `);
-
-      attachSubmit("editUserForm", data=>{
-        if(!data.name || !data.username || !data.pin) return alert("Faltan datos del usuario.");
-
-        const duplicate = state.users.some(u=>u.username===data.username && u.id!==id);
-        if(duplicate) return alert("Ese usuario ya existe.");
-
-        user.name = data.name;
-        user.username = data.username;
-        user.pin = data.pin;
-        user.role = data.role;
+        state.files.push({
+          id:uid(),
+          taskId:taskId,
+          userId:currentUser().id,
+          name:data.name,
+          url:data.url,
+          type:data.type,
+          version:data.version || 1,
+          createdAt:now()
+        });
 
         saveState();
         closeModal();
-        render();
+        SM.openTaskDetail(taskId);
       });
     },
 
-    updateTaskStatus(id,status){
+    updateTaskStatus:function(id,status){
       const task = byId(state.tasks,id);
       if(!task) return;
+
       task.status = status;
       saveState();
       render();
     },
 
-    deleteRecord(collection,id){
+    deleteRecord:function(collection,id){
       if(!confirm("¿Borrar este registro?")) return;
 
-      if(collection==="clients"){
-        state.tasks = state.tasks.filter(t=>t.clientId!==id);
-        state.projects = state.projects.filter(p=>p.clientId!==id);
-        state.clients = state.clients.filter(c=>c.id!==id);
-        if(selectedClientId===id) selectedClientId = "";
+      if(collection === "clients"){
+        state.tasks = state.tasks.filter(function(task){ return task.clientId !== id; });
+        state.projects = state.projects.filter(function(project){ return project.clientId !== id; });
+        state.clients = state.clients.filter(function(client){ return client.id !== id; });
+
+        if(selectedClientId === id) selectedClientId = "";
       }
 
-      if(collection==="projects"){
-        state.tasks = state.tasks.filter(t=>t.projectId!==id);
-        state.projects = state.projects.filter(p=>p.id!==id);
+      if(collection === "projects"){
+        state.tasks = state.tasks.filter(function(task){ return task.projectId !== id; });
+        state.projects = state.projects.filter(function(project){ return project.id !== id; });
       }
 
-      if(collection==="tasks"){
-        state.subtasks = state.subtasks.filter(s=>s.taskId!==id);
-        state.comments = state.comments.filter(c=>c.taskId!==id);
-        state.files = state.files.filter(f=>f.taskId!==id);
-        state.tasks = state.tasks.filter(t=>t.id!==id);
+      if(collection === "tasks"){
+        state.subtasks = state.subtasks.filter(function(sub){ return sub.taskId !== id; });
+        state.comments = state.comments.filter(function(comment){ return comment.taskId !== id; });
+        state.files = state.files.filter(function(file){ return file.taskId !== id; });
+        state.tasks = state.tasks.filter(function(task){ return task.id !== id; });
       }
 
-      if(collection==="users"){
+      if(collection === "users"){
         const logged = currentUser();
-        if(logged && logged.id===id) return alert("No puedes borrar el usuario activo.");
-        state.users = state.users.filter(u=>u.id!==id);
+
+        if(logged && logged.id === id){
+          alert("No puedes borrar el usuario activo.");
+          return;
+        }
+
+        state.users = state.users.filter(function(user){ return user.id !== id; });
       }
 
       saveState();

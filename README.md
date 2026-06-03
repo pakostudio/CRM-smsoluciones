@@ -1,18 +1,29 @@
-# SM OS v3 Azul Premium
+# SM OS Final Limpio
 
-Versión estable para GitHub Pages.
+Versión limpia y estable para GitHub Pages.
 
-## Archivos
+## Archivos para subir
+
 - index.html
 - README.md
 
 ## Login
-Usuario: pako
+
+Usuario: pako  
 PIN: 1234
 
-## Cambios v3
-- Azul premium visible.
-- Sidebar azul.
-- Header con acento azul.
-- Botón Editar usuario visible.
-- localStorage independiente para evitar caché de datos de versiones anteriores.
+## Incluye
+
+- Dashboard
+- Clientes
+- Proyectos
+- Tareas
+- Kanban
+- Calendario
+- Reportes
+- Usuarios
+- Crear, editar y borrar usuarios
+- Diseño azul premium visible
+- Datos locales con localStorage
+
+No usa Vercel, Supabase, npm, package.json ni dependencias externas.
