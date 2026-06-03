@@ -1,18 +1,18 @@
-# SM OS Stable v1
+# SM OS v3 Azul Premium
 
 Versión estable para GitHub Pages.
 
-## Archivos necesarios
-
+## Archivos
 - index.html
 - README.md
 
-## Login demo
-
-Usuario: pako  
+## Login
+Usuario: pako
 PIN: 1234
 
-## Notas
-
-Esta versión no usa Vercel, Supabase, npm ni librerías externas.  
-Los datos se guardan en el navegador mediante localStorage.
+## Cambios v3
+- Azul premium visible.
+- Sidebar azul.
+- Header con acento azul.
+- Botón Editar usuario visible.
+- localStorage independiente para evitar caché de datos de versiones anteriores.

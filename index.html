@@ -6,13 +6,13 @@
   <title>SM OS | Sistema Operativo de Gestión Interna</title>
   <style>
     :root{
-      --bg:#f5f1ea;
-      --bg2:#f3f4f6;
+      --bg:#eef5ff;
+      --bg2:#dbeafe;
       --card:#ffffff;
-      --ink:#1e3a5f;
-      --muted:#5f7896;
-      --line:#e5e7eb;
-      --dark:#183b63;
+      --ink:#0b2f5b;
+      --muted:#4f6f95;
+      --line:#bfd3ea;
+      --dark:#0b3d91;
       --danger:#c62828;
       --green-bg:#e8f5e9;
       --green:#2e7d32;
@@ -22,16 +22,16 @@
       --red:#c62828;
       --gray-bg:#f3f4f6;
       --gray:#374151;
-      --blue-soft:#e8f1f8;
-      --blue-line:#c9d9e8;
-      --blue-accent:#2f5f8f;
+      --blue-soft:#e6f0ff;
+      --blue-line:#aac5e8;
+      --blue-accent:#0b5cab;
     }
 
     *{box-sizing:border-box}
     body{
       margin:0;
       font-family:Arial, Helvetica, sans-serif;
-      background:linear-gradient(135deg,#f5f1ea,#eef4f8);
+      background:radial-gradient(circle at top left,#ffffff 0,#eef5ff 28%,#dbeafe 100%);
       color:var(--ink);
     }
 
@@ -51,7 +51,7 @@
       background:var(--card);
       border:1px solid var(--blue-line);
       border-radius:22px;
-      box-shadow:0 18px 45px rgba(17,24,39,.08);
+      box-shadow:0 18px 45px rgba(11,61,145,.12);
       padding:24px;
     }
 
@@ -100,7 +100,7 @@
       border:0;
       border-radius:14px;
       padding:12px 18px;
-      background:var(--dark);
+      background:linear-gradient(135deg,#0b3d91,#0b5cab);
       color:#fff;
       font-weight:800;
       cursor:pointer;
@@ -160,7 +160,7 @@
     }
 
     .nav button.active{
-      background:var(--dark);
+      background:linear-gradient(135deg,#0b3d91,#0b5cab);
       color:#fff;
     }
 
@@ -352,6 +352,81 @@
       border-color: var(--blue-line);
     }
 
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background:linear-gradient(90deg,rgba(11,61,145,.10),transparent 35%,rgba(11,92,171,.08));
+      z-index:-1;
+    }
+
+    .topbar{
+      border-left:8px solid #0b5cab;
+      background:linear-gradient(135deg,#ffffff 0%,#f4f9ff 100%);
+    }
+
+    aside.card{
+      background:linear-gradient(180deg,#0b3d91 0%,#123f75 100%);
+      border-color:#0b3d91;
+    }
+
+    aside.card .nav button{
+      background:rgba(255,255,255,.10);
+      color:#ffffff;
+      border-color:rgba(255,255,255,.20);
+    }
+
+    aside.card .nav button:hover{
+      background:rgba(255,255,255,.18);
+    }
+
+    aside.card .nav button.active{
+      background:#ffffff;
+      color:#0b3d91;
+      box-shadow:0 10px 25px rgba(0,0,0,.14);
+    }
+
+    .table th{
+      color:#0b5cab;
+    }
+
+    .table td{
+      border-top:1px solid #aac5e8;
+      border-bottom:1px solid #aac5e8;
+    }
+
+    .table td:first-child{
+      border-left:1px solid #aac5e8;
+    }
+
+    .table td:last-child{
+      border-right:1px solid #aac5e8;
+    }
+
+    .btn-secondary{
+      background:#f4f9ff;
+    }
+
+    .btn-danger{
+      background:#fff5f5;
+    }
+
+    .version-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border-radius:999px;
+      padding:7px 11px;
+      background:#e6f0ff;
+      color:#0b3d91;
+      font-size:12px;
+      font-weight:900;
+      margin-left:8px;
+      vertical-align:middle;
+    }
+
     @media(max-width:1050px){
       .layout,.grid-2,.grid-3,.grid-4,.kanban{grid-template-columns:1fr}
       .topbar{align-items:flex-start;flex-direction:column}
@@ -371,8 +446,8 @@
 
 <script>
 (function(){
-  const STORAGE_KEY = "sm_os_stable_v1";
-  const SESSION_KEY = "sm_os_session_v1";
+  const STORAGE_KEY = "sm_os_stable_v3_blue";
+  const SESSION_KEY = "sm_os_session_v3_blue";
 
   const seed = {
     users: [
@@ -614,7 +689,7 @@
     app.innerHTML = `
       <header class="card topbar">
         <div>
-          <div class="small">SM OS</div>
+          <div class="small">SM OS <span class="version-pill">v3 azul premium</span></div>
           <h1 style="margin:4px 0 0;">${escapeHtml(activeClient)}</h1>
           <p style="margin:6px 0 0;color:var(--muted);">${escapeHtml(user.name)} · ${escapeHtml(user.role)}</p>
         </div>
@@ -959,7 +1034,7 @@
               <td>${escapeHtml(user.pin)}</td>
               <td>${escapeHtml(user.role)}</td>
               <td>
-                <button class="btn-secondary" onclick="SM.openEditUserModal('${user.id}')">Editar</button>
+                <button class="btn-secondary" onclick="SM.openEditUserModal('${user.id}')">Editar usuario</button>
                 <button class="btn-danger" onclick="SM.deleteRecord('users','${user.id}')">Borrar</button>
               </td>
             </tr>
