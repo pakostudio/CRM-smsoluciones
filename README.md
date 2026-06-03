@@ -1,4 +1,4 @@
-# SM OS Final Limpio
+# SM OS Final Limpio v5
 
 Versión limpia y estable para GitHub Pages.
 
@@ -16,6 +16,7 @@ PIN: 1234
 
 - Dashboard
 - Clientes
+- Editar cliente
 - Proyectos
 - Tareas
 - Kanban

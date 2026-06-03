@@ -855,6 +855,7 @@
                 <td>${state.projects.filter(function(project){ return project.clientId === client.id; }).length}</td>
                 <td>
                   <button class="btn-secondary" onclick="SM.selectClient('${client.id}')">Abrir</button>
+                  <button class="btn-secondary" onclick="SM.openEditClientModal('${client.id}')">Editar cliente</button>
                   <button class="btn-danger" onclick="SM.deleteRecord('clients','${client.id}')">Borrar</button>
                 </td>
               </tr>
@@ -1167,6 +1168,31 @@
           active:true,
           createdAt:now()
         });
+
+        saveState();
+        closeModal();
+        render();
+      });
+    },
+
+
+    openEditClientModal:function(id){
+      const client = byId(state.clients,id);
+      if(!client) return;
+
+      openModal("Editar cliente", `
+        <form id="editClientForm" class="grid">
+          ${input("name","Nombre del cliente","text",client.name)}
+          ${textarea("description","Descripción",client.description)}
+          <button class="btn" type="submit">Guardar cambios</button>
+        </form>
+      `);
+
+      attachSubmit("editClientForm", function(data){
+        if(!data.name) return alert("Falta el nombre del cliente.");
+
+        client.name = data.name;
+        client.description = data.description;
 
         saveState();
         closeModal();
