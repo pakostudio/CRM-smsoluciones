@@ -173,7 +173,7 @@ body.is-app .workspace-view {
 
 .sidebar-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   flex-direction: column;
   gap: 0;
   margin-bottom: 22px;
@@ -181,20 +181,23 @@ body.is-app .workspace-view {
   padding-bottom: 20px;
 }
 
-.sidebar-header strong,
-.sidebar-header span {
+.app-wordmark strong,
+.app-wordmark span {
   display: block;
 }
 
-.sidebar-header strong {
-  font-size: 18px;
+.app-wordmark strong {
+  color: var(--navy);
+  font-size: 24px;
   font-weight: 700;
+  line-height: 1;
 }
 
-.sidebar-header span {
+.app-wordmark span {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 400;
+  margin-top: 4px;
 }
 
 .logo-frame {
@@ -243,26 +246,17 @@ body.is-app .workspace-view {
   max-height: 92px;
 }
 
-.logo-frame-sidebar {
-  width: 64px;
-  height: 64px;
-  font-size: 13px;
-}
-
-.logo-frame-sidebar img {
-  max-width: 64px;
-  max-height: 64px;
-}
-
-.logo-frame-header {
-  width: 42px;
-  height: 42px;
-  font-size: 14px;
-}
-
-.logo-frame-header img {
-  max-width: 42px;
-  max-height: 42px;
+.header-mark {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--gray);
+  color: var(--navy);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .module-nav {
