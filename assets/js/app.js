@@ -2010,6 +2010,7 @@ var A = {
     mOpen('Edición rápida · '+t.titulo,
       '<div class="fg">'
       +FLD('qe_ti','Nombre de tarea','text',t.titulo||'')
+      +FLD('qe_fr','Frente','text',taskGroup(t)||'General')
       +'<div class="fr3">'+FSL('qe_es','Estado',[['pendiente','Pendiente'],['en_proceso','En proceso'],['en_revision','En revisión'],['aprobada','Aprobada'],['terminada','Terminada']],t.estado||'pendiente')+FSL('qe_pr','Prioridad',[['baja','Baja'],['media','Media'],['alta','Alta'],['critica','Crítica']],t.prioridad||'media')+FSL('qe_oi','Responsable',uO,t.owner_id)+'</div>'
       +'<div class="fr2">'+FLD('qe_fv','Fecha término','date',t.fecha_vencimiento||'')+FLD('qe_ps','Próximo seguimiento','date',followDate(t)||'')+'</div>'
       +FLD('qe_sa','Siguiente acción','text',nextAction(t)||'')
@@ -2022,8 +2023,10 @@ var A = {
     if(!canEditTask(t)){toast('No tienes permisos para editar esta tarea','r');return;}
     var action=fv('qe_sa'), follow=fv('qe_ps');
     var title=fv('qe_ti').trim();
+    var front=fv('qe_fr').trim()||'General';
     if(!title){toast('El nombre de la tarea es obligatorio','r');return;}
-    var data={titulo:title,estado:fv('qe_es'),prioridad:fv('qe_pr'),owner_id:fv('qe_oi'),fecha_vencimiento:fv('qe_fv')||null,descripcion:buildDesc(t.descripcion,{accion:action,seguimiento:follow})};
+    var groupField=isProkicksProject(taskProject(t)) ? {frente:front} : {grupo:front};
+    var data={titulo:title,estado:fv('qe_es'),prioridad:fv('qe_pr'),owner_id:fv('qe_oi'),fecha_vencimiento:fv('qe_fv')||null,descripcion:buildDesc(t.descripcion,Object.assign(groupField,{accion:action,seguimiento:follow}))};
     if(crmEnabled()){data.siguiente_accion=action||null;data.fecha_proximo_seguimiento=follow||null;data.ultima_actividad=new Date().toISOString();}
     var diff=taskDiffText(t,data);
     var saved=await upd('tareas',id,data); if(!saved)return;
