@@ -1797,9 +1797,10 @@ var A = {
     nav('proyectos');
     trackEvent('project_opened',{project_id:id,tab:PTAB});
   },
-  np: function(){ A._pm(null); },
-  ep: function(id){ A._pm(id); },
+  np: function(){ if(!adm()){toast('Solo administrador puede crear proyectos','r');return;} A._pm(null); },
+  ep: function(id){ if(!adm()){toast('Solo administrador puede editar proyectos','r');return;} A._pm(id); },
   _pm: function(id){
+    if(!adm()){toast('Solo administrador puede gestionar proyectos','r');return;}
     var p = id ? xid(DB.proyectos,id) : null;
     var visual = p ? projectVisual(p) : suggestProjectVisual('','');
     var cO = DB.clientes.map(function(c){return [c.id,c.nombre];});
@@ -1837,6 +1838,7 @@ var A = {
     }
   },
   _sp: async function(id){
+    if(!adm()){toast('Solo administrador puede guardar proyectos','r');return;}
     var nm = fv('nm'); if(!nm){toast('Nombre requerido','r');return;}
     var visual={category:fv('cat')||'Servicios profesionales',icon:fv('ico')||'briefcase-business',color:fv('clr')||'#2563EB'};
     if(!id && visual.category==='Servicios profesionales' && visual.icon==='briefcase-business') visual=suggestProjectVisual(nm,fv('dc'));
@@ -1852,6 +1854,7 @@ var A = {
     if(r){mClose();await refresh();trackEvent(id?'project_updated':'project_created',{project_id:r.id});toast(id?'Proyecto actualizado':'Proyecto creado ✓','g'); if(!id) A.openProject(r.id,'tareas');}
   },
   seedProjectFromPlan: async function(project,plan){
+    if(!adm()) return;
     var owner=fv('oi')||SES.userId;
     var start=fv('fi')||today();
     function addDays(base,n){ var d=dateObj(base)||new Date(); d.setDate(d.getDate()+Number(n||7)); return dateKey(d); }
@@ -1872,6 +1875,7 @@ var A = {
   pickIcon: function(el,name){ document.getElementById('f_ico').value=name; el.parentNode.querySelectorAll('.icon-choice').forEach(function(x){x.classList.remove('selected');}); el.classList.add('selected'); hydrateIcons(); },
   pickColor: function(el,color){ document.getElementById('f_clr').value=color; el.parentNode.querySelectorAll('.color-choice').forEach(function(x){x.classList.remove('selected');}); el.classList.add('selected'); },
   baja: async function(id){
+    if(!adm()){toast('Solo administrador puede dar de baja proyectos','r');return;}
     if(!confirm('¿Dar de baja este proyecto? Se eliminará permanentemente.')) return;
     var ok = await del('proyectos',id);
     if(ok){ await refresh(); toast('Proyecto dado de baja ✓','g'); }
