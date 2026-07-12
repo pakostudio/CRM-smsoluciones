@@ -915,7 +915,7 @@ function boardActionKind(t){
   if(/recordatorio|recordar/.test(a)) return 'recordatorio';
   if(/dalia/.test(a)) return 'dalia';
   if(/espera|respuesta/.test(a)) return 'espera';
-  if(/propuesta|vobo|whatsapp/.test(a)) return 'propuesta';
+  if(/propuesta|vobo/.test(a)) return 'propuesta';
   return 'otra';
 }
 function boardFollowKind(t){
@@ -1182,7 +1182,7 @@ function helpFaqs(){
     {cat:'Primeros pasos',q:'¿Qué es el modo cliente?',a:'Es una vista de privacidad para reuniones o Zoom. Al entrar a un proyecto, el sidebar oculta otros clientes y solo muestra el proyecto activo.'},
     {cat:'Centro de mando',q:'¿Qué significa En control, Vigilancia o Atención requerida?',a:'En control indica operación sin alertas críticas. Vigilancia indica pendientes próximos o puntos que requieren seguimiento. Atención requerida indica riesgos, tareas vencidas o tareas sin acción/dueño.'},
     {cat:'Centro de mando',q:'¿Cómo veo tareas vencidas o sin acción?',a:'Entra a Centro de mando y usa los filtros ejecutivos: Vencidas, Próx. 7 días, Sin acción, Sin dueño, En revisión, Riesgos o Mis críticos.'},
-    {cat:'Centro de mando',q:'¿Cómo genero un reporte ejecutivo?',a:'Dentro del proyecto entra a Centro de mando y presiona Generar reporte ejecutivo. Puedes copiarlo para enviarlo por correo, WhatsApp o minuta.'},
+    {cat:'Centro de mando',q:'¿Cómo genero un reporte ejecutivo?',a:'Dentro del proyecto entra a Centro de mando y presiona Generar reporte ejecutivo. Puedes copiarlo para enviarlo por correo o minuta.'},
     {cat:'Plan de trabajo',q:'¿Cómo cambio responsable, fecha o siguiente acción?',a:'En Plan de trabajo presiona Editar rápido en la tarea, actualiza el campo necesario y guarda. El cambio queda registrado en Historial.'},
     {cat:'Plan de trabajo',q:'¿Qué debo llenar siempre en una tarea?',a:'Responsable, estado, fecha de seguimiento y siguiente acción. Eso evita que el sistema la marque como riesgo o sin acción.'},
     {cat:'Acciones masivas',q:'¿Cómo actualizo varias tareas al mismo tiempo?',a:'Desde un filtro del Centro de mando selecciona una o varias tareas, llena responsable, estado, fecha, siguiente acción o comentario, y presiona Aplicar cambios.'},
@@ -1228,7 +1228,10 @@ function vDB(){
 function vAL(){
   var al = getAlerts();
   var permission=('Notification' in window)?Notification.permission:'unsupported';
-  return '<div class="alert-toolbar"><div><h2>Centro de alertas</h2><div class="alsub">Vencimientos, seguimientos e inactividad de tus proyectos.</div></div><div class="alert-actions"><button class="btn btns btng" onclick="requestBrowserNotifications()">'+iconHtml('bell-ring')+' '+(permission==='granted'?'Notificaciones activas':'Activar navegador')+'</button></div></div>'
+  var pref = SES ? userPrefs(SES.userId) : {};
+  var emailState = pref.email && pref.email_enabled && pref.daily_digest ? 'Resumen diario por correo activo' : 'Resumen por correo pendiente de configurar';
+  var emailHint = pref.email ? pref.email : 'Agregar correo en Usuarios';
+  return '<div class="alert-toolbar"><div><h2>Centro de alertas</h2><div class="alsub">Vencimientos, seguimientos e inactividad de tus proyectos.</div><div class="alsub">'+esc(emailState)+' · '+esc(emailHint)+'</div></div><div class="alert-actions">'+(adm()?'<button class="btn btns btng" onclick="nav(\'usuarios\')">'+iconHtml('mail')+' Preferencias</button>':'')+'<button class="btn btns btng" onclick="requestBrowserNotifications()">'+iconHtml('bell-ring')+' '+(permission==='granted'?'Notificaciones activas':'Activar navegador')+'</button></div></div>'
     +(al.length ? al.map(function(a){return '<div class="alitem '+a.cl+'" '+(a.taskId?'style="cursor:pointer" onclick="A.td(\''+a.taskId+'\')"':'')+'><div class="alicon">'+a.ic+'</div><div style="flex:1"><div class="altit">'+esc(a.ti)+'</div><div class="alsub">'+esc(a.su)+'</div></div>'+(a.taskId?'<button class="btn btns btng" onclick="event.stopPropagation();addTaskToCalendar(\''+a.taskId+'\')">'+iconHtml('calendar-plus')+' Calendario</button>':'')+'</div>';}).join('')
     : '<div class="card"><div class="empty"><div class="ei">✓</div><p>Sin alertas. Todo en orden.</p></div></div>');
 }
