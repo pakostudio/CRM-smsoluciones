@@ -11,7 +11,7 @@ Configurar en Project Settings -> Environment Variables:
 - `ALERT_REPLY_TO`: opcional.
 - `SUPABASE_URL`: URL del proyecto Supabase.
 - `SUPABASE_SERVICE_ROLE_KEY`: llave service role. Nunca ponerla en frontend.
-- `CRON_SECRET`: recomendado para proteger el endpoint del cron.
+- `CRON_SECRET`: opcional para pruebas manuales. El cron real de Vercel se valida con headers propios de Vercel.
 - `SM_INTERNAL_API_TOKEN`: opcional para envios manuales administrativos.
 
 ## SQL requerido

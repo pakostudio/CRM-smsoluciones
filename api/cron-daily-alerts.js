@@ -12,10 +12,12 @@ const {
 
 function allowed(req) {
   const secret = process.env.CRON_SECRET || '';
-  if (!secret) return true;
   const auth = req.headers.authorization || '';
+  const userAgent = req.headers['user-agent'] || '';
+  const schedule = req.headers['x-vercel-cron-schedule'] || '';
   const querySecret = new URL(req.url, 'https://sm-os.local').searchParams.get('secret') || '';
-  return auth === `Bearer ${secret}` || querySecret === secret;
+  if (userAgent.includes('vercel-cron/1.0') && schedule) return true;
+  return !!secret && (auth === `Bearer ${secret}` || querySecret === secret);
 }
 
 function todayIso() {
