@@ -37,7 +37,18 @@ function restClient(url,key){
     };
     return api;
   }
-  return {from:builder,channel:function(){return {on:function(){return this;},subscribe:function(){return this;}};}};
+  return {
+    from:builder,
+    rpc:function(name,args){
+      return fetch(url+'/rest/v1/rpc/'+enc(name),{
+        method:'POST',
+        headers:{apikey:key,Authorization:'Bearer '+key,'Content-Type':'application/json',Prefer:'return=representation'},
+        body:JSON.stringify(args||{})
+      }).then(function(r){return r.text().then(function(txt){var data=txt?JSON.parse(txt):null;return r.ok?{data:data,error:null}:{data:null,error:data||{message:r.statusText}};});})
+        .catch(function(e){return {data:null,error:e};});
+    },
+    channel:function(){return {on:function(){return this;},subscribe:function(){return this;}};}
+  };
 }
 const sb = window.supabase ? window.supabase.createClient(SB_URL, SB_KEY) : restClient(SB_URL, SB_KEY);
 const SM_CONFIG = window.SM_CONFIG || {sentryDsn:'',mixpanelToken:''};
@@ -97,12 +108,15 @@ function cNm(id){ var c=xid(DB.clientes,id); return c?c.nombre:'?'; }
 function pNm(id){ var p=xid(DB.proyectos,id); return p?p.nombre:'?'; }
 function ini(s){ var parts=(s||'?').split(' ').filter(function(w){return w.length>0;}); return (parts.length>=2?parts[0][0]+parts[1][0]:parts[0].slice(0,2)).toUpperCase(); }
 function me(){ return SES ? xid(DB.usuarios,SES.userId) : null; }
-function adm(){ var u=me(); return u && u.rol==='admin'; }
+function userRole(u){ var r=String(u&&u.rol||'responsable').toLowerCase(); return r==='user'?'responsable':r; }
+function roleLabel(r){ return ({admin:'Administrador',responsable:'Responsable',colaborador:'Colaborador',lectura:'Solo lectura',user:'Responsable'})[String(r||'responsable').toLowerCase()] || 'Responsable'; }
+function adm(){ return userRole(me())==='admin'; }
+function readOnly(){ return userRole(me())==='lectura'; }
+function canWrite(){ return !!SES && !readOnly(); }
 function canEditTask(t){
-  // Hotfix 2.0.2: operación ejecutiva.
-  // Cualquier usuario autenticado que ya ve una tarea/proyecto puede gestionar sus tareas.
-  // Evita bloquear a coordinación cuando el responsable visible es distinto al usuario técnico.
-  return !!(t && SES);
+  // Control operativo: admin, responsable y colaborador pueden operar tareas visibles.
+  // El rol lectura puede consultar, pero no modificar.
+  return !!(t && canWrite());
 }
 function iconHtml(name){ return '<i data-lucide="'+esc(name||'folder')+'"></i>'; }
 function hydrateIcons(){ try{ if(window.lucide) window.lucide.createIcons(); }catch(e){} }
@@ -520,8 +534,12 @@ function getAlerts(){
 /* ── DB CRUD ── */
 async function loadAll(){
   try {
+    var usersPublic = await sb.from('usuarios_publicos').select('*').order('nombre');
+    var usersQuery = usersPublic.error
+      ? sb.from('usuarios').select('id,nombre,username,rol,activo,created_at').order('nombre')
+      : Promise.resolve(usersPublic);
     var [u,c,p,t,st,cm,en,pa,re] = await Promise.all([
-      sb.from('usuarios').select('*').order('nombre'),
+      usersQuery,
       sb.from('clientes').select('*').order('nombre'),
       sb.from('proyectos').select('*').order('created_at',{ascending:false}),
       sb.from('tareas').select('*').order('created_at',{ascending:false}),
@@ -1544,7 +1562,7 @@ function vUS(){
     return '<tr>'
       +'<td><div style="display:flex;align-items:center;gap:9px"><div class="av">'+ini(u.nombre)+'</div><span style="font-weight:700">'+esc(u.nombre)+'</span></div></td>'
       +'<td style="color:var(--muted)">'+esc(u.username)+'</td>'
-      +'<td><span class="badge '+(u.rol==='admin'?'bc_':'bb_')+'">'+( u.rol==='admin'?'Administrador':'Usuario')+'</span></td>'
+      +'<td><span class="badge '+(userRole(u)==='admin'?'bc_':userRole(u)==='lectura'?'bx_':'bb_')+'">'+esc(roleLabel(userRole(u)))+'</span></td>'
       +'<td>'+(u.activo?'<span class="badge bg_">Activo</span>':'<span class="badge bx_">Inactivo</span>')+'</td>'
       +'<td><div style="display:flex;gap:5px"><button class="btn btns btng" onclick="A.eu(\''+u.id+'\')">Editar</button>'
       +(u.id!==SES.userId?'<button class="btn btns btnd" onclick="A.tu(\''+u.id+'\')">'+( u.activo?'Desactivar':'Activar')+'</button>':'')
@@ -2413,25 +2431,29 @@ var A = {
   },
 
   /* USUARIO */
-  nu: function(){ A._um(null); },
-  eu: function(id){ A._um(id); },
+  nu: function(){ if(!adm()){toast('Solo administrador puede crear usuarios','r');return;} A._um(null); },
+  eu: function(id){ if(!adm()){toast('Solo administrador puede editar usuarios','r');return;} A._um(id); },
   _um: function(id){
+    if(!adm()){toast('Solo administrador puede gestionar usuarios','r');return;}
     var u = id ? xid(DB.usuarios,id) : null;
     var pref = userPrefs(id||'');
+    var pinLabel = u ? 'Nuevo PIN (opcional)' : 'PIN';
     mOpen(u?'Editar usuario':'Nuevo usuario',
       '<div class="fg">'
       +'<div class="fr2">'+FLD('nm','Nombre completo','text',u&&u.nombre)+FLD('us','Usuario (login)','text',u&&u.username)+'</div>'
-      +'<div class="fr2">'+FLD('pi','PIN','text',u&&u.pin)+FSL('ro','Rol',[['admin','Administrador'],['user','Usuario']],u&&u.rol||'user')+'</div>'
+      +'<div class="fr2">'+FLD('pi',pinLabel,'text','')+FSL('ro','Rol',[['admin','Administrador'],['responsable','Responsable'],['colaborador','Colaborador'],['lectura','Solo lectura']],userRole(u))+'</div>'
       +'<div class="fr2">'+FLD('em','Correo para alertas','email',pref.email)+FLD('dh','Hora del resumen diario','number',pref.digest_hour)+'</div>'
       +'<div class="fr2">'+FSL('ne','Alertas por correo',[['true','Activadas'],['false','Desactivadas']],String(pref.email_enabled))+FSL('nd','Resumen diario',[['true','Activado'],['false','Desactivado']],String(pref.daily_digest))+'</div>'
       +'<div class="fa"><button class="btn btng" onclick="mClose()">Cancelar</button><button class="btn btnc" onclick="A._su(\''+( id||'')+'\')">Guardar</button></div>'
       +'</div>');
   },
   _su: async function(id){
+    if(!adm()){toast('Solo administrador puede guardar usuarios','r');return;}
     var nm=fv('nm'),us=fv('us'),pi=fv('pi');
-    if(!nm||!us||!pi){toast('Todos los campos son requeridos','r');return;}
+    if(!nm||!us||(!id&&!pi)){toast('Nombre, usuario y PIN inicial son requeridos','r');return;}
     if(!id && DB.usuarios.some(function(u){return u.username===us;})){toast('Ese usuario ya existe','r');return;}
-    var data = {nombre:nm,username:us,pin:pi,rol:fv('ro')};
+    var data = {nombre:nm,username:us,rol:fv('ro')};
+    if(pi) data.pin=pi;
     var r = id ? await upd('usuarios',id,data) : await ins('usuarios',Object.assign({activo:true},data));
     if(r){
       await sb.from('notification_preferences').upsert({user_id:r.id,email:fv('em')||null,email_enabled:fv('ne')==='true',browser_enabled:true,daily_digest:fv('nd')==='true',digest_hour:Math.max(0,Math.min(23,Number(fv('dh'))||8)),timezone:'America/Mexico_City',updated_at:new Date().toISOString()},{onConflict:'user_id'});
@@ -2439,6 +2461,7 @@ var A = {
     }
   },
   tu: async function(id){
+    if(!adm()){toast('Solo administrador puede activar/desactivar usuarios','r');return;}
     var u = xid(DB.usuarios,id); if(!u) return;
     await upd('usuarios',id,{activo:!u.activo});
     await refresh(); toast(u.activo?'Usuario desactivado':'Usuario activado','g');
@@ -2472,15 +2495,30 @@ function buildSelector(){
   });
 }
 
-function doLogin(){
+async function verifyUserPin(userId,pin){
+  if(sb.rpc){
+    var rpc = await sb.rpc('sm_verify_pin',{p_user_id:userId,p_pin:pin});
+    if(!rpc.error){
+      var row = Array.isArray(rpc.data) ? rpc.data[0] : rpc.data;
+      if(row && row.id) return row;
+      return null;
+    }
+  }
+  // Compatibility fallback until supabase/security-hardening.sql is applied.
+  var legacy = await sb.from('usuarios')
+    .select('id,nombre,username,rol,activo')
+    .eq('id',userId)
+    .eq('pin',pin)
+    .single();
+  return legacy.error ? null : legacy.data;
+}
+
+async function doLogin(){
   if(!SELUID){ document.getElementById('lerr').textContent='Selecciona tu nombre.'; return; }
   var pin = document.getElementById('f-pin').value.trim();
   if(!pin){ document.getElementById('lerr').textContent='Ingresa tu PIN.'; return; }
-  var found = null;
-  for(var i=0;i<DB.usuarios.length;i++){
-    var u = DB.usuarios[i];
-    if(u.id===SELUID && String(u.pin)===String(pin) && u.activo){ found=u; break; }
-  }
+  document.getElementById('lerr').textContent = 'Validando acceso…';
+  var found = await verifyUserPin(SELUID,pin);
   if(!found){
     document.getElementById('lerr').textContent = 'PIN incorrecto.';
     document.getElementById('f-pin').value = '';
@@ -2496,8 +2534,8 @@ function activateSession(found,state){
   document.body.classList.add('logged');
   document.getElementById('sb-av').textContent = ini(found.nombre);
   document.getElementById('sb-n').textContent = found.nombre;
-  document.getElementById('sb-r').textContent = found.rol==='admin' ? 'Administrador' : 'Usuario';
-  if(found.rol==='admin') document.getElementById('nav-admin').style.display = 'block';
+  document.getElementById('sb-r').textContent = roleLabel(userRole(found));
+  if(userRole(found)==='admin') document.getElementById('nav-admin').style.display = 'block';
   else document.getElementById('nav-admin').style.display = 'none';
   document.getElementById('tb-live').style.display = 'block';
   buildProjectNav();
