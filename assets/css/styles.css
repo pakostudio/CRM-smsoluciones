@@ -630,6 +630,108 @@ tr:hover td{background:var(--surface2)}
   .pk-tabs .tab.active{min-width:auto}
 }
 
+/* SM OS 2.4.18 · Premium sidebar */
+.sidebar{
+  background:
+    radial-gradient(circle at 18% 8%,rgba(0,170,221,.13),transparent 30%),
+    linear-gradient(180deg,#f4f8fc 0%,#eaf1f8 100%);
+  box-shadow:inset -1px 0 0 rgba(11,37,71,.08);
+}
+.sb-top{
+  padding:20px 16px 18px;
+  background:rgba(255,255,255,.54);
+  backdrop-filter:blur(12px);
+}
+.sb-logo{
+  min-height:62px;
+  padding:12px 13px;
+  border:1px solid rgba(11,37,71,.08);
+  border-radius:18px;
+  background:linear-gradient(135deg,rgba(255,255,255,.94),rgba(248,251,255,.78));
+  box-shadow:0 14px 30px rgba(11,37,71,.07);
+}
+.sb-logo img{width:42px;filter:drop-shadow(0 7px 12px rgba(0,170,221,.16))}
+.sbt .sm2{font-size:16px;letter-spacing:2.5px}
+.sbt .os{font-size:12px;letter-spacing:4px}
+.nav-sec{padding:16px 11px 6px}
+.nav-lbl{
+  padding:0 10px;
+  margin-bottom:8px;
+  font-size:11px;
+  color:#718096;
+}
+.nbtn{
+  min-height:44px;
+  gap:11px;
+  padding:9px 11px;
+  margin-bottom:6px;
+  border:1px solid transparent;
+  border-radius:14px;
+  font-size:14px;
+  font-weight:850;
+}
+.nbtn:hover{
+  background:rgba(255,255,255,.74);
+  border-color:rgba(11,37,71,.08);
+  box-shadow:0 10px 22px rgba(11,37,71,.055);
+}
+.nbtn.active{
+  background:#fff;
+  border-color:rgba(0,170,221,.22);
+  color:var(--navy);
+  box-shadow:0 14px 28px rgba(11,37,71,.08),inset 4px 0 0 var(--cyan);
+}
+.ni{
+  width:32px;
+  height:32px;
+  display:grid;
+  place-items:center;
+  border-radius:11px;
+  background:rgba(11,37,71,.06);
+  color:#708095;
+}
+.nbtn.active .ni,.nbtn:hover .ni{
+  background:var(--cyan-soft);
+  color:var(--cyan);
+}
+.ni svg{width:18px;height:18px}
+.client-privacy-pill{
+  border-radius:18px;
+  background:rgba(255,255,255,.78);
+  box-shadow:0 10px 24px rgba(11,37,71,.055);
+}
+.pnavbtn{
+  border-left:0!important;
+  background:rgba(255,255,255,.44);
+}
+.pnavbtn.active{
+  border-left:0!important;
+  background:#fff;
+  box-shadow:0 16px 32px rgba(11,37,71,.09),inset 0 0 0 1px color-mix(in srgb,var(--project-color) 24%,transparent);
+}
+.project-mark{
+  width:34px;
+  height:34px;
+  flex-basis:34px;
+  border-radius:12px;
+  box-shadow:inset 0 -1px 0 rgba(11,37,71,.08);
+}
+.project-mark svg{width:18px;height:18px}
+.nav-project-name{font-size:14px;font-weight:900}
+.nav-count{
+  min-width:28px;
+  height:28px;
+  border-radius:999px;
+  background:linear-gradient(135deg,#ffe8ed,#f7dfe7);
+  box-shadow:inset 0 -1px 0 rgba(184,50,50,.08);
+  font-size:12px;
+}
+.upill{
+  border-radius:18px;
+  background:rgba(255,255,255,.82);
+  box-shadow:0 12px 28px rgba(11,37,71,.08);
+}
+
 /* SM OS 2.4.2 — OFUNAM / tablero ancho corregido
    La vista de Grupos y registros elimina la columna de último comentario
    para evitar desbordes y conservar acciones visibles. */
