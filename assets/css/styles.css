@@ -518,6 +518,57 @@ tr:hover td{background:var(--surface2)}
 .guided-meta{color:var(--muted);font-weight:700;margin-top:5px}
 @media(max-width:820px){.guided-checks{grid-template-columns:1fr}}
 
+/* SM OS 2.4.15 · Visual polish premium */
+.btn svg{width:15px;height:15px;stroke-width:2.4px;flex:0 0 15px}
+.btnc{box-shadow:0 8px 18px rgba(0,170,221,.18)}
+.btnc:hover{box-shadow:0 10px 22px rgba(0,170,221,.24)}
+.btng{background:linear-gradient(180deg,#fff,#f8fafc)}
+.btng:hover{border-color:rgba(0,170,221,.35);color:var(--navy);box-shadow:0 8px 18px rgba(11,37,71,.06)}
+.btnd{background:linear-gradient(180deg,#fff7f7,var(--rbg))}
+.card{box-shadow:0 10px 28px rgba(11,37,71,.07)}
+.card:hover{border-color:rgba(11,37,71,.14)}
+.tabs{gap:10px;border-bottom:1px solid rgba(11,37,71,.12)}
+.tab{position:relative;padding:11px 16px;border-radius:10px 10px 0 0}
+.tab:hover{background:rgba(255,255,255,.66)}
+.tab.active{background:#fff;color:var(--navy);box-shadow:0 -1px 0 rgba(11,37,71,.04),0 8px 20px rgba(11,37,71,.05)}
+.tab.active:after{content:'';position:absolute;left:12px;right:12px;bottom:-1px;height:3px;border-radius:999px;background:linear-gradient(90deg,var(--cyan),#38bdf8)}
+.data-card{padding:18px 20px 16px;overflow:hidden}
+.data-card .ch{align-items:center;margin-bottom:14px}
+.data-card h3{display:flex;align-items:center;gap:8px;font-size:18px}
+.data-card h3:before{content:'';width:10px;height:10px;border-radius:3px;background:linear-gradient(135deg,var(--cyan),var(--navy));box-shadow:0 0 0 4px var(--cyan-soft)}
+.data-table{border-collapse:separate;border-spacing:0}
+.data-table thead th{background:linear-gradient(180deg,#fff,#f8fafc);font-size:11px}
+.data-table tbody tr{transition:background .14s ease}
+.data-table tbody tr:hover td{background:#f7fbff}
+.data-table td:first-child{font-weight:850;color:var(--navy)}
+.table-tools{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.file-ico{display:inline-grid;place-items:center;width:28px;height:22px;border-radius:5px;color:#fff;font-size:9px;font-weight:950;letter-spacing:.03em;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12)}
+.file-ico.xls{background:#1f8f4d}
+.file-ico.pdf{background:#c63d3d}
+.export-xls{background:#eefaf3;color:#176c3b;border:1px solid rgba(31,143,77,.22)}
+.export-xls:hover{background:#e1f5e9;color:#145c34}
+.export-pdf{background:#fff1f1;color:#a62929;border:1px solid rgba(198,61,61,.22)}
+.export-pdf:hover{background:#ffe6e6;color:#8f2020}
+.row-actions{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.row-actions .btn{min-height:36px;border-radius:10px;padding:7px 10px;font-weight:850}
+.row-actions .action-scan{background:linear-gradient(135deg,#00aadd,#0284c7);min-width:86px}
+.row-actions .action-edit{border-color:rgba(11,37,71,.14)}
+.row-actions .action-delete{min-width:92px}
+.inventory-table .operational-actions .btn,
+.operational-table .operational-actions .btn{border-radius:10px;font-weight:850}
+.badge,.chip{box-shadow:inset 0 -1px 0 rgba(11,37,71,.04)}
+.sg .sc{position:relative;overflow:hidden}
+.sg .sc:after{content:'';position:absolute;right:-18px;top:-26px;width:70px;height:70px;border-radius:22px;background:rgba(0,170,221,.055);transform:rotate(18deg)}
+.sl,.sn,.ss{position:relative;z-index:1}
+.front-summary{box-shadow:0 8px 20px rgba(11,37,71,.05)}
+.scanner-box video{box-shadow:0 18px 40px rgba(7,25,47,.20)}
+.qr-code-box{background:linear-gradient(180deg,#fff,#f8fafc)}
+@media(max-width:720px){
+  .table-tools{justify-content:flex-start}
+  .row-actions{display:grid;grid-template-columns:1fr 1fr}
+  .row-actions .action-delete{grid-column:1/-1}
+}
+
 /* SM OS 2.4.2 — OFUNAM / tablero ancho corregido
    La vista de Grupos y registros elimina la columna de último comentario
    para evitar desbordes y conservar acciones visibles. */

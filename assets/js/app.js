@@ -1703,7 +1703,7 @@ function pkInventoryView(){
   }
   return '<div class="inventory-shell">'+backendNote
     +'<div class="sg inv-kpis">'+metricCards+'</div>'
-    +'<div class="card"><div class="ch"><h3>Control de dispositivos</h3><div class="operational-actions"><button class="btn btns btng" onclick="A.pkSeedLocalDevices()">Preparar PK-0001 a PK-0200</button><button class="btn btns btng" onclick="A.pkOpenScanner()">'+iconHtml('scan-line')+' Escanear QR</button><button class="btn btns btng" onclick="A.pkImportDevices()">Importar CSV/Excel</button><button class="btn btns btng" onclick="A.pkExportDevices()">Exportar CSV</button></div></div>'
+    +'<div class="card data-card"><div class="ch"><h3>Control de dispositivos</h3><div class="table-tools"><button class="btn btns btng" onclick="A.pkSeedLocalDevices()">'+iconHtml('package-plus')+' Preparar 200</button><button class="btn btns btnc" onclick="A.pkOpenScanner()">'+iconHtml('scan-line')+' Escanear QR</button><button class="btn btns btng" onclick="A.pkImportDevices()">'+iconHtml('upload')+' Importar</button><button class="btn btns export-xls" onclick="A.pkExportInventory(\'xls\')"><span class="file-ico xls">XLS</span> Excel</button><button class="btn btns export-pdf" onclick="A.pkExportInventory(\'pdf\')"><span class="file-ico pdf">PDF</span> PDF</button></div></div>'
     +'<div class="inv-status-strip">'+statusStrip+'</div>'
     +'<div class="inv-filters"><div class="fld"><label>Búsqueda manual</label><input id="f_invq" value="'+esc(PKINV_FILTERS.q)+'" placeholder="PK-0047, cliente, responsable" oninput="PKINV_FILTERS.q=this.value;render()"></div><div class="fld"><label>Estado</label><select onchange="PKINV_FILTERS.status=this.value;render()">'+statusOps+'</select></div><div class="fld"><label>Cliente</label><select onchange="PKINV_FILTERS.cliente=this.value;render()">'+clientOps+'</select></div><div class="fld"><label>Responsable</label><select onchange="PKINV_FILTERS.responsable=this.value;render()">'+respOps+'</select></div><div class="fld"><label>Devolución</label><select onchange="PKINV_FILTERS.vencida=this.value;render()"><option value="">Todas</option><option value="si" '+(PKINV_FILTERS.vencida==='si'?'selected':'')+'>Vencida</option></select></div><div class="fld inv-filter-action"><label>&nbsp;</label><button class="btn btng" onclick="A.pkClearInventoryFilters()">Limpiar</button></div></div>'
     +'<div class="tw"><table class="inventory-table"><thead><tr><th>Código</th><th>Estado</th><th>Cliente</th><th>Responsable</th><th>Ubicación</th><th>Devolución</th><th>Alerta</th><th>Acciones</th></tr></thead><tbody>'+body+'</tbody></table></div></div></div>';
@@ -1718,15 +1718,33 @@ function semDevice(d){
 }
 function pkTable(tipo){
   var rows=pkRows(tipo);
-  var cols={prospecto:[['cliente','Prospecto'],['contacto','Contacto'],['rep','Rep'],['etapa','Etapa'],['siguiente_accion','Siguiente acción'],['proximo_seguimiento','Seguimiento'],['probabilidad','Prob.'],['monto_estimado','Monto']],cliente:[['nombre','Nombre'],['empresa','Club / Empresa'],['contacto','Contacto'],['ciudad','Ciudad'],['telefono','Teléfono'],['fuente','Fuente']],venta:[['cliente','Cliente'],['rep','Rep'],['devices','Devices'],['monto','Monto'],['saldo','Saldo'],['estadoVenta','Venta'],['estadoPago','Pago'],['entrega','Entrega']],comodato:[['cliente','Cliente'],['rep','Rep'],['devices','Devices'],['device_codes','Códigos PK'],['estado','Estado'],['fechaEntrega','Entrega'],['fechaDevolucion','Devolución'],['ciudad','Ciudad']],cobranza:[['cliente','Cliente'],['rep','Rep'],['monto','Monto'],['saldo','Saldo'],['estadoVenta','Estado'],['accion','Acción']]}[tipo]||[];
+  var meta=pkTableMeta(tipo), cols=meta.cols;
   var head=cols.map(function(c){return '<th>'+esc(c[1])+'</th>';}).join('')+'<th></th>';
-  var body=rows.map(function(r){return '<tr>'+cols.map(function(c){var v=pkVal(r,c[0]); if(c[0]==='device_codes')v=pkComodatoDeviceLabel(r); else if(['monto','saldo','monto_estimado'].indexOf(c[0])>=0)v=pkMoney(v); else if(['estadoVenta','estadoPago','entrega','estado','etapa'].indexOf(c[0])>=0)v=pkStatus(v); else v=esc(v||''); return '<td>'+v+'</td>';}).join('')+'<td><div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn btns btng" onclick="A.pkEdit(\''+r.id+'\')">Editar</button>'+(tipo==='comodato'?'<button class="btn btns btnc" onclick="A.pkLinkComodato(\''+r.id+'\')">Vincular device</button>':'')+'<button class="btn btns btnd" onclick="A.pkDel(\''+r.id+'\')">Eliminar</button></div></td></tr>';}).join('') || '<tr><td colspan="'+(cols.length+1)+'"><div class="empty"><p>Sin registros</p></div></td></tr>';
-  return '<div class="card"><div class="ch"><h3>'+esc((PKTABS.find(function(t){return t[0]===tipo;})||[])[1]||tipo)+'</h3><span class="chip">'+rows.length+' registro(s)</span></div><div class="tw"><table><thead><tr>'+head+'</tr></thead><tbody>'+body+'</tbody></table></div></div>';
+  var body=rows.map(function(r){return '<tr>'+cols.map(function(c){var v=pkVal(r,c[0]); if(c[0]==='device_codes')v=pkComodatoDeviceLabel(r); else if(['monto','saldo','monto_estimado'].indexOf(c[0])>=0)v=pkMoney(v); else if(['estadoVenta','estadoPago','entrega','estado','etapa'].indexOf(c[0])>=0)v=pkStatus(v); else v=esc(v||''); return '<td>'+v+'</td>';}).join('')+'<td><div class="row-actions"><button class="btn btns btng action-edit" onclick="A.pkEdit(\''+r.id+'\')">'+iconHtml('pencil')+' Editar</button>'+(tipo==='comodato'?'<button class="btn btns btnc action-scan" onclick="A.pkLinkComodato(\''+r.id+'\')">'+iconHtml('scan-line')+' QR</button>':'')+'<button class="btn btns btnd action-delete" onclick="A.pkDel(\''+r.id+'\')">'+iconHtml('trash-2')+' Eliminar</button></div></td></tr>';}).join('') || '<tr><td colspan="'+(cols.length+1)+'"><div class="empty"><p>Sin registros</p></div></td></tr>';
+  var tools='<div class="table-tools"><span class="chip">'+rows.length+' registro(s)</span><button class="btn btns export-xls" onclick="A.pkExportTable(\''+tipo+'\',\'xls\')"><span class="file-ico xls">XLS</span> Excel</button><button class="btn btns export-pdf" onclick="A.pkExportTable(\''+tipo+'\',\'pdf\')"><span class="file-ico pdf">PDF</span> PDF</button></div>';
+  return '<div class="card data-card"><div class="ch"><h3>'+esc(meta.title)+'</h3>'+tools+'</div><div class="tw"><table class="data-table"><thead><tr>'+head+'</tr></thead><tbody>'+body+'</tbody></table></div></div>';
 }
 function csvCell(v){
   var s=String(v==null?'':v);
   return /[",\n\r]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
 }
+function stripHtmlText(v){
+  var div=document.createElement('div');
+  div.innerHTML=String(v==null?'':v);
+  return div.textContent||div.innerText||'';
+}
+function downloadBlob(filename,content,type){
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:type||'text/plain;charset=utf-8'}));
+  a.download=filename;
+  a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
+}
+function pkTableMeta(tipo){
+  var cols={prospecto:[['cliente','Prospecto'],['contacto','Contacto'],['rep','Rep'],['etapa','Etapa'],['siguiente_accion','Siguiente acción'],['proximo_seguimiento','Seguimiento'],['probabilidad','Prob.'],['monto_estimado','Monto']],cliente:[['nombre','Nombre'],['empresa','Club / Empresa'],['contacto','Contacto'],['ciudad','Ciudad'],['telefono','Teléfono'],['fuente','Fuente']],venta:[['cliente','Cliente'],['rep','Rep'],['devices','Devices'],['monto','Monto'],['saldo','Saldo'],['estadoVenta','Venta'],['estadoPago','Pago'],['entrega','Entrega']],comodato:[['cliente','Cliente'],['rep','Rep'],['devices','Devices'],['device_codes','Códigos PK'],['estado','Estado'],['fechaEntrega','Entrega'],['fechaDevolucion','Devolución'],['ciudad','Ciudad']],cobranza:[['cliente','Cliente'],['rep','Rep'],['monto','Monto'],['saldo','Saldo'],['estadoVenta','Estado'],['accion','Acción']]}[tipo]||[];
+  return {cols:cols,title:(PKTABS.find(function(t){return t[0]===tipo;})||[])[1]||tipo};
+}
+function pkExportSlug(tipo){ return String((pkTableMeta(tipo).title||tipo||'prokicks')).toLowerCase().replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,''); }
 function parseCsvRows(text){
   var rows=[], row=[], cell='', q=false;
   for(var i=0;i<String(text||'').length;i++){
@@ -2806,6 +2824,33 @@ var A = {
     var cols=['code','status','cliente','responsable','ubicacion','fecha_salida','fecha_devolucion_prevista','fecha_entrada','notas'];
     var csv=[cols.join(',')].concat(rows.map(function(d){return [d.code,d.status,pkDeviceClientName(d),pkDeviceOwnerName(d),d.ubicacion||'',d.fecha_salida||'',d.fecha_devolucion_prevista||'',d.fecha_entrada||'',d.notas||''].map(csvCell).join(',');})).join('\n');
     var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); a.download='inventario-prokicks.csv'; a.click(); setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
+  },
+  pkExportInventory: function(format){
+    var rows=pkInventoryFiltered(), title='ProKicks · Inventario dispositivos';
+    var cols=[['code','Código'],['status','Estado'],['cliente','Cliente'],['responsable','Responsable'],['ubicacion','Ubicación'],['fecha_salida','Salida'],['fecha_devolucion_prevista','Devolución'],['fecha_entrada','Entrada'],['notas','Notas']];
+    var table='<table><thead><tr>'+cols.map(function(c){return '<th>'+esc(c[1])+'</th>';}).join('')+'</tr></thead><tbody>'
+      +rows.map(function(d){var vals={code:d.code,status:d.status,cliente:pkDeviceClientName(d),responsable:pkDeviceOwnerName(d),ubicacion:d.ubicacion||'',fecha_salida:d.fecha_salida||'',fecha_devolucion_prevista:d.fecha_devolucion_prevista||'',fecha_entrada:d.fecha_entrada||'',notas:d.notas||''}; return '<tr>'+cols.map(function(c){return '<td>'+esc(vals[c[0]]||'')+'</td>';}).join('')+'</tr>';}).join('')
+      +'</tbody></table>';
+    var html='<!doctype html><html><head><meta charset="utf-8"><title>'+esc(title)+'</title><style>body{font-family:Arial,Helvetica,sans-serif;color:#14233a}h1{font-size:22px;margin:0 0 4px}.meta{font-size:12px;color:#667085;margin-bottom:18px}table{border-collapse:collapse;width:100%;font-size:12px}th{background:#0b2547;color:#fff;text-align:left;padding:9px;border:1px solid #d8dee8}td{padding:8px;border:1px solid #d8dee8;vertical-align:top}tr:nth-child(even) td{background:#f7fafc}.brand{font-weight:900;color:#00aadd;letter-spacing:.08em}</style></head><body><div class="brand">SM OS · PROKICKS</div><h1>'+esc(title)+'</h1><div class="meta">'+rows.length+' registros · '+new Date().toLocaleString('es-MX')+'</div>'+table+'</body></html>';
+    if(format==='xls'){downloadBlob('inventario-prokicks.xls',html,'application/vnd.ms-excel;charset=utf-8');toast('Excel generado ✓','g');return;}
+    var w=window.open('','_blank'); if(!w){toast('Permite ventanas emergentes para generar PDF','r');return;}
+    w.document.open(); w.document.write(html); w.document.close(); w.focus(); setTimeout(function(){w.print();},350);
+  },
+  pkExportTable: function(tipo,format){
+    var meta=pkTableMeta(tipo), rows=pkRows(tipo), title='ProKicks · '+meta.title;
+    var table='<table><thead><tr>'+meta.cols.map(function(c){return '<th>'+esc(c[1])+'</th>';}).join('')+'</tr></thead><tbody>'
+      +rows.map(function(r){return '<tr>'+meta.cols.map(function(c){var v=pkVal(r,c[0]); if(c[0]==='device_codes')v=pkCodeText(v); if(['monto','saldo','monto_estimado'].indexOf(c[0])>=0)v=pkMoney(v); return '<td>'+esc(stripHtmlText(v||''))+'</td>';}).join('')+'</tr>';}).join('')
+      +'</tbody></table>';
+    var html='<!doctype html><html><head><meta charset="utf-8"><title>'+esc(title)+'</title><style>body{font-family:Arial,Helvetica,sans-serif;color:#14233a}h1{font-size:22px;margin:0 0 4px}.meta{font-size:12px;color:#667085;margin-bottom:18px}table{border-collapse:collapse;width:100%;font-size:12px}th{background:#0b2547;color:#fff;text-align:left;padding:9px;border:1px solid #d8dee8}td{padding:8px;border:1px solid #d8dee8;vertical-align:top}tr:nth-child(even) td{background:#f7fafc}.brand{font-weight:900;color:#00aadd;letter-spacing:.08em}</style></head><body><div class="brand">SM OS · PROKICKS</div><h1>'+esc(title)+'</h1><div class="meta">'+rows.length+' registros · '+new Date().toLocaleString('es-MX')+'</div>'+table+'</body></html>';
+    if(format==='xls'){
+      downloadBlob(pkExportSlug(tipo)+'.xls',html,'application/vnd.ms-excel;charset=utf-8');
+      toast('Excel generado ✓','g');
+      return;
+    }
+    var w=window.open('','_blank');
+    if(!w){toast('Permite ventanas emergentes para generar PDF','r');return;}
+    w.document.open(); w.document.write(html); w.document.close(); w.focus();
+    setTimeout(function(){w.print();},350);
   },
   pkClearInventoryFilters: function(){PKINV_FILTERS={status:'',cliente:'',responsable:'',vencida:'',q:''};render();},
 
