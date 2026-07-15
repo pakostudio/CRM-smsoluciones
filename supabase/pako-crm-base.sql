@@ -42,6 +42,7 @@ create table if not exists public.proyectos (
   estado text not null default 'activo',
   prioridad text not null default 'media',
   presupuesto numeric default 0,
+  drive_url text,
   fecha_inicio date,
   fecha_vencimiento date,
   pipeline text default 'prospecto',
