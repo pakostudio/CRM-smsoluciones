@@ -598,6 +598,26 @@ tr:hover td{background:var(--surface2)}
   height:18px;
   stroke-width:2.35;
 }
+.tabs-premium .tab i{
+  width:32px;
+  height:32px;
+  border-radius:11px;
+  display:grid;
+  place-items:center;
+  background:rgba(11,37,71,.06);
+  color:#64748b;
+  transition:.15s ease;
+}
+.tabs-premium .tab i svg{width:17px;height:17px}
+.tabs-premium .tab:hover i{
+  background:var(--cyan-soft);
+  color:var(--cyan);
+}
+.tabs-premium .tab.active i{
+  background:linear-gradient(135deg,var(--cyan),#075985);
+  color:#fff;
+  box-shadow:0 9px 18px rgba(0,170,221,.18);
+}
 .tabs-premium .tab span{line-height:1}
 .tabs-premium .tab:hover{
   background:#fff;
@@ -731,6 +751,59 @@ tr:hover td{background:var(--surface2)}
   background:rgba(255,255,255,.82);
   box-shadow:0 12px 28px rgba(11,37,71,.08);
 }
+
+/* SM OS 2.4.19 · Stronger icon system */
+.ni,.project-mark{
+  position:relative;
+  overflow:hidden;
+}
+.ni:after,.project-mark:after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.34),transparent 45%);
+  pointer-events:none;
+}
+.nbtn .ni svg,.project-mark svg{
+  position:relative;
+  z-index:1;
+  filter:drop-shadow(0 1px 1px rgba(0,0,0,.10));
+}
+.nbtn[data-v="dashboard"] .ni{background:linear-gradient(135deg,#0ea5e9,#0b65c2);color:#fff}
+.nbtn[data-v="tareas"] .ni{background:linear-gradient(135deg,#16a34a,#0f766e);color:#fff}
+.nbtn[data-v="alertas"] .ni{background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff}
+.nbtn[data-v="ayuda"] .ni{background:linear-gradient(135deg,#8b5cf6,#2563eb);color:#fff}
+.nbtn[data-v="clientes"] .ni{background:linear-gradient(135deg,#64748b,#0f172a);color:#fff}
+.nbtn[data-v="usuarios"] .ni{background:linear-gradient(135deg,#06b6d4,#155e75);color:#fff}
+.nbtn:hover .ni,.nbtn.active .ni{
+  transform:scale(1.04);
+  color:#fff;
+  box-shadow:0 9px 18px rgba(11,37,71,.16);
+}
+.pnavbtn .project-mark{
+  background:linear-gradient(135deg,color-mix(in srgb,var(--project-color) 82%,#fff),color-mix(in srgb,var(--project-color) 55%,#0b2547));
+  color:#fff;
+}
+.pnavbtn.active .project-mark{
+  transform:scale(1.06);
+  box-shadow:0 10px 22px color-mix(in srgb,var(--project-color) 24%,transparent),inset 0 -1px 0 rgba(0,0,0,.12);
+}
+.pnavbtn[title*="Deporte"]{
+  background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(232,248,255,.72));
+}
+.pnavbtn[title*="Deporte"] .project-mark{
+  background:linear-gradient(135deg,#00aadd,#075985);
+}
+.pnavbtn[title*="Deporte"].active{
+  box-shadow:0 18px 34px rgba(0,170,221,.14),inset 0 0 0 1px rgba(0,170,221,.26);
+}
+.nav-count{
+  color:#b4233a;
+  border:1px solid rgba(184,50,50,.08);
+}
+.nbtn{transition:transform .15s ease, box-shadow .15s ease, background .15s ease, border-color .15s ease}
+.nbtn:hover{transform:translateX(2px)}
+.nbtn.active{transform:translateX(3px)}
 
 /* SM OS 2.4.2 — OFUNAM / tablero ancho corregido
    La vista de Grupos y registros elimina la columna de último comentario
