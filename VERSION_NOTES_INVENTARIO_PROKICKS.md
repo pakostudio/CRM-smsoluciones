@@ -28,7 +28,7 @@
 
 ## Modo operativo urgente
 
-- Si el proyecto Supabase todavía no tiene `inventory_devices` e `inventory_movements`, el módulo queda operativo usando `prokicks_records` como almacenamiento interno.
+- Si el proyecto Supabase todavía no tiene `inventory_devices` e `inventory_movements`, el módulo queda operativo usando comentarios técnicos `INVPK::` dentro de ProKicks como bitácora central.
 - Este modo permite usar inventario, movimientos, historial, QR, filtros, importación y exportación sin esperar permisos de dueño en Supabase.
 - Cuando se aplique la migración formal, los datos pueden trasladarse a `inventory_devices` e `inventory_movements`.
 

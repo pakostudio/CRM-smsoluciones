@@ -567,8 +567,8 @@ async function loadAll(){
       DB.inventory_movements = invMoves.data||[];
     }else{
       DB.inventory_ready = true;
-      DB.inventory_backend = 'records';
-      loadInventoryFromProkicksRecords();
+      DB.inventory_backend = 'comments';
+      loadInventoryFromProkicksComments();
     }
     var prefs = await sb.from('notification_preferences').select('*');
     DB.notification_preferences = prefs.error ? [] : (prefs.data||[]);
@@ -1468,14 +1468,57 @@ function loadInventoryFromProkicksRecords(){
   DB.inventory_devices=devices;
   DB.inventory_movements=moves;
 }
+function pkInventoryStorageTaskId(){
+  var p=pkProject(); if(!p) return '';
+  var t=DB.tareas.find(function(x){return x.proyecto_id===p.id && /inventario prokicks/i.test(String(x.titulo||''));}) ||
+        DB.tareas.find(function(x){return x.proyecto_id===p.id;});
+  return t&&t.id||'';
+}
+function loadInventoryFromProkicksComments(){
+  var p=pkProject(), pid=p&&p.id;
+  var taskIds=DB.tareas.filter(function(t){return !pid || t.proyecto_id===pid;}).map(function(t){return t.id;});
+  var taskSet={}; taskIds.forEach(function(id){taskSet[id]=true;});
+  var devices={}, moves=[];
+  DB.comentarios.filter(function(c){return taskSet[c.tarea_id] && String(c.texto||'').indexOf('INVPK::')===0;})
+    .sort(function(a,b){return String(a.created_at||'').localeCompare(String(b.created_at||''));})
+    .forEach(function(c){
+      try{
+        var ev=JSON.parse(String(c.texto).slice(7));
+        if(ev.type==='device' && ev.device && ev.device.code){
+          devices[ev.device.code]=Object.assign({id:ev.device.code,_comment_id:c.id,created_at:c.created_at,updated_at:c.created_at},ev.device);
+        }
+        if(ev.type==='movement' && ev.movement && ev.movement.code){
+          moves.push(Object.assign({id:c.id,created_at:c.created_at,_comment_id:c.id},ev.movement));
+        }
+      }catch(e){}
+    });
+  DB.inventory_devices=Object.keys(devices).map(function(k){return devices[k];});
+  DB.inventory_movements=moves;
+}
+async function pkInvInsertCommentEvent(event){
+  var tid=pkInventoryStorageTaskId();
+  if(!tid){toast('No hay tarea ProKicks para guardar inventario','r');return null;}
+  return await ins('comentarios',{tarea_id:tid,usuario_id:SES.userId,texto:'INVPK::'+JSON.stringify(event)});
+}
 async function pkInvInsertDevice(payload){
   if(DB.inventory_backend==='native') return await ins('inventory_devices',payload);
+  if(DB.inventory_backend==='comments'){
+    var d=Object.assign({},payload,{id:payload.code,updated_at:new Date().toISOString()});
+    var r=await pkInvInsertCommentEvent({type:'device',device:d});
+    return r ? d : null;
+  }
   var p=pkProject();
   var r=await ins('prokicks_records',{proyecto_id:p&&p.id||payload.proyecto_id||null,owner_id:SES.userId,tipo:'inventory_device',data:payload,updated_at:new Date().toISOString()});
   return r ? Object.assign({id:r.id,created_at:r.created_at,updated_at:r.updated_at,_record_id:r.id},r.data||{}) : null;
 }
 async function pkInvUpdateDevice(id,payload){
   if(DB.inventory_backend==='native') return await upd('inventory_devices',id,payload);
+  if(DB.inventory_backend==='comments'){
+    var old=DB.inventory_devices.find(function(d){return d.id===id;})||{};
+    var d=Object.assign({},old,payload,{id:old.id||old.code||id,code:old.code||payload.code||id,updated_at:new Date().toISOString()});
+    var r=await pkInvInsertCommentEvent({type:'device',device:d});
+    return r ? d : null;
+  }
   var old=DB.inventory_devices.find(function(d){return d.id===id;})||{};
   var data=Object.assign({},old,payload,{updated_at:new Date().toISOString()});
   delete data._record_id;
@@ -1484,6 +1527,11 @@ async function pkInvUpdateDevice(id,payload){
 }
 async function pkInvInsertMovement(payload){
   if(DB.inventory_backend==='native') return await ins('inventory_movements',payload);
+  if(DB.inventory_backend==='comments'){
+    var m=Object.assign({},payload,{id:'mov_'+Date.now()+'_'+Math.random().toString(16).slice(2),created_at:new Date().toISOString()});
+    var r=await pkInvInsertCommentEvent({type:'movement',movement:m});
+    return r ? m : null;
+  }
   var p=pkProject();
   var r=await ins('prokicks_records',{proyecto_id:p&&p.id||null,owner_id:SES.userId,tipo:'inventory_movement',data:payload,updated_at:new Date().toISOString()});
   return r ? Object.assign({id:r.id,created_at:r.created_at,_record_id:r.id},r.data||{}) : null;
@@ -1611,8 +1659,8 @@ function pkDashboard(){
 }
 function pkInventoryView(){
   var rows=pkInventoryFiltered(), all=pkDevices();
-  var backendNote = DB.inventory_backend==='records'
-    ? '<div class="hbar inv-backend-note"><span class="dot dy"></span>Modo operativo activo: datos guardados en ProKicks hasta aplicar la migración formal de Supabase.</div>'
+  var backendNote = DB.inventory_backend!=='native'
+    ? '<div class="hbar inv-backend-note"><span class="dot dy"></span>Modo operativo activo: inventario guardado en bitácora ProKicks hasta aplicar la migración formal de Supabase.</div>'
     : '';
   var byStatus=PK_DEVICE_STATUSES.map(function(s){return [s,all.filter(function(d){return d.status===s;}).length];});
   var vencidas=all.filter(pkReturnOverdue).length;
