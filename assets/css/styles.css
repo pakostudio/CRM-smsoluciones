@@ -341,13 +341,42 @@ tr:hover td{background:var(--surface2)}
 .front-summary strong{white-space:nowrap}
 .front-summary .btn{padding:3px 8px;font-size:10px}
 
+/* PROKICKS INVENTORY */
+.inventory-shell{display:grid;gap:14px}
+.inv-kpis{grid-template-columns:repeat(5,minmax(0,1fr))}
+.inv-metric{font-size:22px!important;white-space:nowrap}
+.inv-status-strip{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+.inv-status-pill{border:1px solid var(--line);background:var(--surface2);border-radius:999px;padding:6px 10px;display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--muted);cursor:pointer}
+.inv-status-pill strong{min-width:20px;height:20px;border-radius:999px;background:var(--surface);display:grid;place-items:center;color:var(--navy);font-size:11px}
+.inv-status-pill.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.inv-status-pill.active strong{background:rgba(255,255,255,.16);color:#fff}
+.inv-filters{display:grid;grid-template-columns:minmax(220px,1.2fr) repeat(4,minmax(140px,.8fr)) auto;gap:10px;align-items:end;margin-bottom:14px}
+.inv-filter-action .btn{width:100%;justify-content:center}
+.inventory-table th,.inventory-table td{vertical-align:middle}
+.inventory-table th:nth-child(1){width:130px}
+.inventory-table th:nth-child(8){width:260px}
+.muted-mini{font-size:11px;color:var(--muted);line-height:1.25;margin-top:3px}
+.inv-overdue{background:rgba(220,38,38,.045)}
+.inventory-detail{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:14px;align-items:start}
+.inv-device-card{margin:0}
+.inv-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.inv-detail-grid div{border:1px solid var(--line);background:var(--surface2);border-radius:var(--rs);padding:10px}
+.inv-detail-grid span{display:block;font-size:10px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.inv-detail-grid strong{display:block;font-size:13px;color:var(--ink);overflow-wrap:anywhere}
+.inv-notes{font-size:13px;color:var(--muted);line-height:1.45;margin:12px 0}
+.qr-code-box{border:1px dashed var(--line2);border-radius:var(--r);background:var(--surface2);padding:18px;display:grid;place-items:center;text-align:center;min-height:190px}
+.qr-placeholder{width:132px;height:132px;border-radius:12px;background:repeating-linear-gradient(45deg,#0b2547 0,#0b2547 6px,#fff 6px,#fff 12px);color:#fff;display:grid;place-items:center;font-size:15px;font-weight:900;text-shadow:0 1px 3px rgba(0,0,0,.45);box-shadow:inset 0 0 0 10px #fff,inset 0 0 0 13px #0b2547}
+.scanner-box{display:grid;gap:12px}
+.scanner-box video{width:100%;max-height:58vh;background:#07192f;border-radius:var(--r);border:1px solid var(--line2);object-fit:cover}
+.scanner-help{font-size:13px;color:var(--muted);background:var(--surface2);border:1px solid var(--line);border-radius:var(--rs);padding:10px}
+
 /* EMPTY */
 .empty{text-align:center;padding:42px 24px;color:var(--muted)}
 .ei{font-size:30px;margin-bottom:10px}
 
 @media(max-width:1500px){.operational-table{min-width:1280px;table-layout:fixed}}
-@media(max-width:900px){#app{grid-template-columns:1fr}.sidebar{display:flex;position:fixed;left:-280px;z-index:60;transition:left .2s;box-shadow:12px 0 28px rgba(11,37,71,.18)}body.mobile-nav-open .sidebar{left:0}body.mobile-nav-open:after{content:'';position:fixed;inset:0;background:rgba(11,37,71,.25);z-index:55}.mobile-nav-toggle{display:grid}.tb-l{flex-direction:row;align-items:center;gap:8px}.sg{grid-template-columns:repeat(2,1fr)}.project-head .pdesc{max-width:90vw}.project-kpis{display:grid;grid-template-columns:repeat(2,1fr)}.project-kpis .sc:nth-child(2){border-right:0}.project-kpis .sc:nth-child(-n+2){border-bottom:1px solid var(--line)}.pkw-head{grid-template-columns:1fr 1fr}.pkw-actions{justify-content:flex-start}.pkw-sub{grid-template-columns:auto 1fr auto}.pkw-sub>*:nth-child(3),.pkw-sub>*:nth-child(4){display:none}.pkw-checks{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:600px){.sg{grid-template-columns:1fr}.content{padding:16px 14px}.fr2,.fr3{grid-template-columns:1fr}.dg3,.crmgrid{grid-template-columns:1fr}.topbar{height:auto;align-items:flex-start;gap:10px;padding:14px}.tb-r{flex-wrap:wrap;justify-content:flex-end}.chip{font-size:11px;padding:6px 9px}.pkw-head{grid-template-columns:1fr}.pkw-checks{grid-template-columns:1fr}}
+@media(max-width:900px){#app{grid-template-columns:1fr}.sidebar{display:flex;position:fixed;left:-280px;z-index:60;transition:left .2s;box-shadow:12px 0 28px rgba(11,37,71,.18)}body.mobile-nav-open .sidebar{left:0}body.mobile-nav-open:after{content:'';position:fixed;inset:0;background:rgba(11,37,71,.25);z-index:55}.mobile-nav-toggle{display:grid}.tb-l{flex-direction:row;align-items:center;gap:8px}.sg{grid-template-columns:repeat(2,1fr)}.project-head .pdesc{max-width:90vw}.project-kpis{display:grid;grid-template-columns:repeat(2,1fr)}.project-kpis .sc:nth-child(2){border-right:0}.project-kpis .sc:nth-child(-n+2){border-bottom:1px solid var(--line)}.pkw-head{grid-template-columns:1fr 1fr}.pkw-actions{justify-content:flex-start}.pkw-sub{grid-template-columns:auto 1fr auto}.pkw-sub>*:nth-child(3),.pkw-sub>*:nth-child(4){display:none}.pkw-checks{grid-template-columns:repeat(2,minmax(0,1fr))}.inv-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.inv-filters{grid-template-columns:1fr 1fr}.inventory-detail{grid-template-columns:1fr}.inventory-table{min-width:980px}}
+@media(max-width:600px){.sg{grid-template-columns:1fr}.content{padding:16px 14px}.fr2,.fr3{grid-template-columns:1fr}.dg3,.crmgrid{grid-template-columns:1fr}.topbar{height:auto;align-items:flex-start;gap:10px;padding:14px}.tb-r{flex-wrap:wrap;justify-content:flex-end}.chip{font-size:11px;padding:6px 9px}.pkw-head{grid-template-columns:1fr}.pkw-checks{grid-template-columns:1fr}.inv-kpis,.inv-filters,.inv-detail-grid{grid-template-columns:1fr}.inv-status-pill{width:100%;justify-content:space-between}.qr-code-box{min-height:160px}.scanner-box video{max-height:64vh}}
 
 /* SM OS 2.0 CONTROL EJECUTIVO */
 .command-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(260px,.65fr);gap:14px;margin-bottom:14px}

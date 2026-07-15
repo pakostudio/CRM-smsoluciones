@@ -70,7 +70,7 @@ try{
 }catch(e){}
 
 /* ── STATE ── */
-var DB = {usuarios:[],clientes:[],proyectos:[],tareas:[],subtareas:[],comentarios:[],entregables:[],pagos:[],reuniones:[],prokicks_records:[],prokicks_settings:[],notification_preferences:[],usage_events:[]};
+var DB = {usuarios:[],clientes:[],proyectos:[],tareas:[],subtareas:[],comentarios:[],entregables:[],pagos:[],reuniones:[],prokicks_records:[],prokicks_settings:[],inventory_devices:[],inventory_movements:[],inventory_ready:true,notification_preferences:[],usage_events:[]};
 var SES = null;  // {userId}
 var VIEW = 'dashboard';
 var FPID = '';   // filter project id
@@ -78,6 +78,8 @@ var PTAB = 'tareas'; // project workspace tab
 var SELUID = ''; // selected user on login
 var PKTAB = 'dashboard';
 var PKWORKTAB = 'todos';
+var PKINV_FILTERS = {status:'',cliente:'',responsable:'',vencida:'',q:''};
+var PKINV_SCAN = {stream:null,timer:null};
 var PK_INIT_BUSY = false;
 var PK_NEW_FRONT = '';
 var SESSION_KEY = 'sm_os_session_v1';
@@ -556,6 +558,11 @@ async function loadAll(){
     var pkset = await sb.from('prokicks_settings').select('*');
     DB.prokicks_records = pk.error ? [] : (pk.data||[]);
     DB.prokicks_settings = pkset.error ? [] : (pkset.data||[]);
+    var invDevices = await sb.from('inventory_devices').select('*').order('code');
+    var invMoves = await sb.from('inventory_movements').select('*').order('created_at',{ascending:false});
+    DB.inventory_ready = !invDevices.error && !invMoves.error;
+    DB.inventory_devices = invDevices.error ? [] : (invDevices.data||[]);
+    DB.inventory_movements = invMoves.error ? [] : (invMoves.data||[]);
     var prefs = await sb.from('notification_preferences').select('*');
     DB.notification_preferences = prefs.error ? [] : (prefs.data||[]);
     if(await normalizeProjectGroups()){
@@ -1423,7 +1430,9 @@ function vPI(){
 }
 
 /* PROKICKS */
-var PKTABS = [['dashboard','Dashboard inventario'],['prospecto','Prospectos'],['cliente','Clientes ProKicks'],['venta','Ventas'],['comodato','Comodatos'],['cobranza','Cobranza']];
+var PKTABS = [['dashboard','Dashboard inventario'],['inventario','Inventario dispositivos'],['prospecto','Prospectos'],['cliente','Clientes ProKicks'],['venta','Ventas'],['comodato','Comodatos'],['cobranza','Cobranza']];
+var PK_DEVICE_STATUSES = ['Disponible','En demostración','Prestado','En comodato','Vendido','Mantenimiento','Dañado','Extraviado','Baja'];
+var PK_MOVEMENT_LABELS = {alta:'Alta',salida:'Salida',entrada:'Entrada',devolucion:'Devolución',asignacion_cliente:'Asignación cliente',mantenimiento:'Mantenimiento',cambio_estado:'Cambio de estado',importacion:'Importación',ajuste:'Ajuste'};
 var PKSCHEMAS = {
   prospecto:[['cliente','Club / empresa','text',true],['contacto','Contacto','text'],['cargo','Cargo','text'],['ciudad','Ciudad','text'],['telefono','Teléfono','text'],['email','Email','email'],['rep','Rep','text'],['fuente','Fuente','text'],['etapa','Etapa','select',true,['por_contactar','contactado','demo_agendada','propuesta_enviada','negociacion','cerrado','perdido']],['siguiente_accion','Siguiente acción','text'],['proximo_seguimiento','Próximo seguimiento','date'],['probabilidad','Probabilidad %','number'],['monto_estimado','Monto estimado','number'],['devices_estimados','Devices estimados','number'],['notas','Notas','textarea']],
   cliente:[['nombre','Nombre','text',true],['empresa','Club / Empresa','text'],['contacto','Contacto','text'],['ciudad','Ciudad','text'],['telefono','Teléfono','text'],['email','Email','email'],['fuente','Fuente','text'],['notas','Notas','textarea']],
@@ -1441,6 +1450,36 @@ function canUseProkicks(){
   return DB.tareas.some(function(t){ return t.proyecto_id===p.id && t.owner_id===SES.userId; });
 }
 function pkRows(tipo){ var p=pkProject(); return p ? DB.prokicks_records.filter(function(r){return r.proyecto_id===p.id && r.tipo===tipo;}) : []; }
+function pkDevices(){ return DB.inventory_devices.slice().sort(function(a,b){return String(a.code||'').localeCompare(String(b.code||''));}); }
+function pkMovements(deviceId){ return DB.inventory_movements.filter(function(m){return m.device_id===deviceId;}).sort(function(a,b){return String(b.created_at||'').localeCompare(String(a.created_at||''));}); }
+function pkDeviceStatusBadge(st){
+  if(!st) return '<span class="badge bx_">—</span>';
+  var s=String(st||'Disponible');
+  var cls=/Disponible/i.test(s)?'bg_':(/Vendido|Baja/i.test(s)?'bc_':(/Dañado|Extraviado/i.test(s)?'br_':(/Mantenimiento/i.test(s)?'by_':'bb_')));
+  return '<span class="badge '+cls+'">'+esc(s)+'</span>';
+}
+function pkNextDeviceCode(){
+  var max=0;
+  DB.inventory_devices.forEach(function(d){var m=String(d.code||'').match(/^PK-(\d+)$/); if(m) max=Math.max(max,Number(m[1]));});
+  return 'PK-'+String(max+1).padStart(4,'0');
+}
+function pkReturnOverdue(d){
+  return d && d.fecha_devolucion_prevista && !['Disponible','Vendido','Baja','Extraviado'].includes(d.status) && dayDiff(d.fecha_devolucion_prevista)<0;
+}
+function pkDeviceClientName(d){ return d.cliente_nombre || (d.cliente_id ? cNm(d.cliente_id) : '—'); }
+function pkDeviceOwnerName(d){ return d.responsable_id ? uNm(d.responsable_id) : '—'; }
+function pkInventoryFiltered(){
+  var fs=PKINV_FILTERS;
+  return pkDevices().filter(function(d){
+    var q=String(fs.q||'').trim().toLowerCase();
+    if(fs.status && d.status!==fs.status) return false;
+    if(fs.cliente && String(d.cliente_id||'')!==fs.cliente && String(d.cliente_nombre||'')!==fs.cliente) return false;
+    if(fs.responsable && String(d.responsable_id||'')!==fs.responsable) return false;
+    if(fs.vencida==='si' && !pkReturnOverdue(d)) return false;
+    if(q && [d.code,d.status,pkDeviceClientName(d),pkDeviceOwnerName(d),d.ubicacion,d.notas].join(' ').toLowerCase().indexOf(q)<0) return false;
+    return true;
+  });
+}
 function pkSetting(){ var p=pkProject(); var s=p&&DB.prokicks_settings.find(function(x){return x.proyecto_id===p.id;}); return s ? (s.data||{}) : {}; }
 function pkVal(r,k){ return (r.data||{})[k]; }
 function pkMoney(v){ return '$'+Number(v||0).toLocaleString('es-MX'); }
@@ -1510,8 +1549,11 @@ function vPK(){
   if(!p) return '<div class="card"><div class="empty"><div class="ei">⚽</div><p>No existe el proyecto ProKicks.</p></div></div>';
   if(!canUseProkicks()) return '<div class="card"><div class="empty"><div class="ei">🔒</div><p>Este módulo solo está disponible para admin o responsables de ProKicks.</p></div></div>';
   var tabs=PKTABS.map(function(t){return '<button class="tab '+(PKTAB===t[0]?'active':'')+'" onclick="PKTAB=\''+t[0]+'\';render()">'+t[1]+'</button>';}).join('');
-  var body=PKTAB==='dashboard'?pkDashboard():pkTable(PKTAB);
-  return '<div class="sh"><h2>Operación ProKicks</h2>'+(PKTAB!=='dashboard'?'<button class="btn btnc" onclick="A.pkNew()">+ Nuevo registro</button>':'')+'</div><div class="tabs">'+tabs+'</div>'+body;
+  var body=PKTAB==='dashboard'?pkDashboard():(PKTAB==='inventario'?pkInventoryView():pkTable(PKTAB));
+  var action = PKTAB==='inventario' && DB.inventory_ready
+    ? '<button class="btn btnc" onclick="A.pkNewDevice()">'+iconHtml('plus')+' Nuevo dispositivo</button>'
+    : (PKTAB!=='dashboard'?'<button class="btn btnc" onclick="A.pkNew()">+ Nuevo registro</button>':'');
+  return '<div class="sh"><h2>Operación ProKicks</h2>'+action+'</div><div class="tabs">'+tabs+'</div>'+body;
 }
 function pkDashboard(){
   var st=pkSetting(), ventas=pkRows('venta'), comodatos=pkRows('comodato'), prospectos=pkRows('prospecto');
@@ -1527,7 +1569,57 @@ function pkDashboard(){
   var note = st.inventarioRedwood===undefined||st.inventarioRedwood===null||st.inventarioRedwood==='' ? 'Inventario calculado automáticamente.' : 'Inventario capturado manualmente.';
   return '<div class="sh"><h2>Dashboard inventario</h2><button class="btn btnc" onclick="A.pkSettings()">Editar inventario</button></div>'
     +'<div class="sg">'+metrics.map(function(m){return '<div class="sc"><div class="sl">'+esc(m[0])+'</div><div class="sn" style="font-size:24px">'+esc(String(m[1]))+'</div></div>';}).join('')+'</div>'
-    +'<div class="card" style="padding:14px 16px"><div style="font-size:13px;color:var(--muted)">'+esc(note)+' Inventario teórico: '+invAuto+' · Última actualización: '+(st.actualizadoEn?fmtdt(st.actualizadoEn):'—')+'</div></div>';
+    +'<div class="card" style="padding:14px 16px"><div style="font-size:13px;color:var(--muted)">'+esc(note)+' Inventario teórico: '+invAuto+' · Dispositivos registrados: '+DB.inventory_devices.length+' · Última actualización: '+(st.actualizadoEn?fmtdt(st.actualizadoEn):'—')+'</div></div>';
+}
+function pkInventoryView(){
+  var rows=pkInventoryFiltered(), all=pkDevices();
+  if(!DB.inventory_ready){
+    return '<div class="card"><div class="empty"><div class="ei">📦</div><p><strong>Migración pendiente.</strong></p><p>Ejecuta <code>supabase/prokicks-inventory.sql</code> en Supabase para crear <code>inventory_devices</code>, <code>inventory_movements</code> y cargar PK-0001 a PK-0200.</p></div></div>';
+  }
+  var byStatus=PK_DEVICE_STATUSES.map(function(s){return [s,all.filter(function(d){return d.status===s;}).length];});
+  var vencidas=all.filter(pkReturnOverdue).length;
+  var statusOps='<option value="">Todos</option>'+PK_DEVICE_STATUSES.map(function(s){return '<option value="'+esc(s)+'"'+(PKINV_FILTERS.status===s?' selected':'')+'>'+esc(s)+'</option>';}).join('');
+  var clientNames={};
+  all.forEach(function(d){var k=d.cliente_id||d.cliente_nombre||''; if(k) clientNames[k]=pkDeviceClientName(d);});
+  var clientOps='<option value="">Todos</option>'+Object.keys(clientNames).sort(function(a,b){return clientNames[a].localeCompare(clientNames[b]);}).map(function(k){return '<option value="'+esc(k)+'"'+(PKINV_FILTERS.cliente===k?' selected':'')+'>'+esc(clientNames[k])+'</option>';}).join('');
+  var respOps='<option value="">Todos</option>'+DB.usuarios.filter(function(u){return u.activo!==false;}).map(function(u){return '<option value="'+esc(u.id)+'"'+(PKINV_FILTERS.responsable===u.id?' selected':'')+'>'+esc(u.nombre)+'</option>';}).join('');
+  var metricCards=[
+    ['Registrados',all.length],
+    ['Disponibles',all.filter(function(d){return d.status==='Disponible';}).length],
+    ['En campo',all.filter(function(d){return ['En demostración','Prestado','En comodato'].indexOf(d.status)>=0;}).length],
+    ['Vencidos',vencidas],
+    ['Siguiente código',pkNextDeviceCode()]
+  ].map(function(m){return '<div class="sc"><div class="sl">'+esc(m[0])+'</div><div class="sn inv-metric">'+esc(String(m[1]))+'</div></div>';}).join('');
+  var statusStrip=byStatus.map(function(x){return '<button class="inv-status-pill '+(PKINV_FILTERS.status===x[0]?'active':'')+'" onclick="PKINV_FILTERS.status=\''+esc(x[0])+'\';render()"><span>'+esc(x[0])+'</span><strong>'+x[1]+'</strong></button>';}).join('');
+  var body=rows.map(function(d){
+    return '<tr class="'+(pkReturnOverdue(d)?'inv-overdue':'')+'">'
+      +'<td><button class="linkbtn" onclick="A.pkDeviceDetail(\''+d.id+'\')">'+esc(d.code)+'</button><div class="muted-mini">QR: '+esc(d.qr_payload||d.code)+'</div></td>'
+      +'<td>'+pkDeviceStatusBadge(d.status)+'</td>'
+      +'<td>'+esc(pkDeviceClientName(d))+'</td>'
+      +'<td>'+esc(pkDeviceOwnerName(d))+'</td>'
+      +'<td>'+esc(d.ubicacion||'—')+'</td>'
+      +'<td>'+fmt(d.fecha_devolucion_prevista)+'</td>'
+      +'<td>'+semDevice(d)+'</td>'
+      +'<td><div class="operational-actions"><button class="btn btns btnc" onclick="A.pkMoveDevice(\''+d.id+'\',\'salida\')">Salida</button><button class="btn btns btng" onclick="A.pkMoveDevice(\''+d.id+'\',\'entrada\')">Entrada</button><button class="btn btns btng" onclick="A.pkDeviceDetail(\''+d.id+'\')">Historial</button></div></td>'
+      +'</tr>';
+  }).join('') || '<tr><td colspan="8"><div class="empty"><p>No hay dispositivos con esos filtros.</p></div></td></tr>';
+  if(!all.length){
+    body='<tr><td colspan="8"><div class="empty"><div class="ei">📦</div><p>No hay dispositivos cargados. Ejecuta la migración SQL o usa importación CSV.</p></div></td></tr>';
+  }
+  return '<div class="inventory-shell">'
+    +'<div class="sg inv-kpis">'+metricCards+'</div>'
+    +'<div class="card"><div class="ch"><h3>Control de dispositivos</h3><div class="operational-actions"><button class="btn btns btng" onclick="A.pkSeedLocalDevices()">Preparar PK-0001 a PK-0200</button><button class="btn btns btng" onclick="A.pkOpenScanner()">'+iconHtml('scan-line')+' Escanear QR</button><button class="btn btns btng" onclick="A.pkImportDevices()">Importar CSV/Excel</button><button class="btn btns btng" onclick="A.pkExportDevices()">Exportar CSV</button></div></div>'
+    +'<div class="inv-status-strip">'+statusStrip+'</div>'
+    +'<div class="inv-filters"><div class="fld"><label>Búsqueda manual</label><input id="f_invq" value="'+esc(PKINV_FILTERS.q)+'" placeholder="PK-0047, cliente, responsable" oninput="PKINV_FILTERS.q=this.value;render()"></div><div class="fld"><label>Estado</label><select onchange="PKINV_FILTERS.status=this.value;render()">'+statusOps+'</select></div><div class="fld"><label>Cliente</label><select onchange="PKINV_FILTERS.cliente=this.value;render()">'+clientOps+'</select></div><div class="fld"><label>Responsable</label><select onchange="PKINV_FILTERS.responsable=this.value;render()">'+respOps+'</select></div><div class="fld"><label>Devolución</label><select onchange="PKINV_FILTERS.vencida=this.value;render()"><option value="">Todas</option><option value="si" '+(PKINV_FILTERS.vencida==='si'?'selected':'')+'>Vencida</option></select></div><div class="fld inv-filter-action"><label>&nbsp;</label><button class="btn btng" onclick="A.pkClearInventoryFilters()">Limpiar</button></div></div>'
+    +'<div class="tw"><table class="inventory-table"><thead><tr><th>Código</th><th>Estado</th><th>Cliente</th><th>Responsable</th><th>Ubicación</th><th>Devolución</th><th>Alerta</th><th>Acciones</th></tr></thead><tbody>'+body+'</tbody></table></div></div></div>';
+}
+function semDevice(d){
+  if(pkReturnOverdue(d)) return '<span class="dot dr"></span><strong>Devolución vencida</strong>';
+  if(d.fecha_devolucion_prevista){
+    var diff=dayDiff(d.fecha_devolucion_prevista);
+    if(diff<=2 && diff>=0) return '<span class="dot dy"></span><strong>Devuelve en '+diff+'d</strong>';
+  }
+  return '<span class="dot dg"></span>OK';
 }
 function pkTable(tipo){
   var rows=pkRows(tipo);
@@ -1535,6 +1627,55 @@ function pkTable(tipo){
   var head=cols.map(function(c){return '<th>'+esc(c[1])+'</th>';}).join('')+'<th></th>';
   var body=rows.map(function(r){return '<tr>'+cols.map(function(c){var v=pkVal(r,c[0]); if(['monto','saldo','monto_estimado'].indexOf(c[0])>=0)v=pkMoney(v); else if(['estadoVenta','estadoPago','entrega','estado','etapa'].indexOf(c[0])>=0)v=pkStatus(v); else v=esc(v||''); return '<td>'+v+'</td>';}).join('')+'<td><div style="display:flex;gap:5px"><button class="btn btns btng" onclick="A.pkEdit(\''+r.id+'\')">Editar</button><button class="btn btns btnd" onclick="A.pkDel(\''+r.id+'\')">Eliminar</button></div></td></tr>';}).join('') || '<tr><td colspan="'+(cols.length+1)+'"><div class="empty"><p>Sin registros</p></div></td></tr>';
   return '<div class="card"><div class="ch"><h3>'+esc((PKTABS.find(function(t){return t[0]===tipo;})||[])[1]||tipo)+'</h3><span class="chip">'+rows.length+' registro(s)</span></div><div class="tw"><table><thead><tr>'+head+'</tr></thead><tbody>'+body+'</tbody></table></div></div>';
+}
+function csvCell(v){
+  var s=String(v==null?'':v);
+  return /[",\n\r]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+}
+function parseCsvRows(text){
+  var rows=[], row=[], cell='', q=false;
+  for(var i=0;i<String(text||'').length;i++){
+    var ch=text[i], nx=text[i+1];
+    if(q && ch==='"' && nx==='"'){cell+='"';i++;continue;}
+    if(ch==='"'){q=!q;continue;}
+    if(!q && ch===','){row.push(cell);cell='';continue;}
+    if(!q && (ch==='\n' || ch==='\r')){
+      if(ch==='\r' && nx==='\n') i++;
+      row.push(cell); if(row.some(function(x){return String(x).trim()!=='';})) rows.push(row);
+      row=[]; cell=''; continue;
+    }
+    cell+=ch;
+  }
+  row.push(cell); if(row.some(function(x){return String(x).trim()!=='';})) rows.push(row);
+  if(!rows.length) return [];
+  var headers=rows.shift().map(function(h){return normHeader(h);});
+  return rows.map(function(r){var o={}; headers.forEach(function(h,i){o[h]=String(r[i]||'').trim();}); return o;});
+}
+function normHeader(h){
+  return String(h||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+}
+function normalizeImportRow(r){
+  var out={}, map={codigo:'code',código:'code',code:'code',estado:'status',status:'status',cliente:'cliente_nombre',cliente_nombre:'cliente_nombre',responsable:'responsable',ubicacion:'ubicacion',ubicación:'ubicacion',devolucion:'fecha_devolucion_prevista',devolución:'fecha_devolucion_prevista',fecha_devolucion:'fecha_devolucion_prevista',fecha_devolucion_prevista:'fecha_devolucion_prevista',notas:'notas',nota:'notas'};
+  Object.keys(r||{}).forEach(function(k){var nk=map[normHeader(k)]||normHeader(k); out[nk]=String(r[k]||'').trim();});
+  if(out.status){
+    var match=PK_DEVICE_STATUSES.find(function(s){return s.toLowerCase()===out.status.toLowerCase();});
+    out.status=match||out.status;
+  }
+  return out;
+}
+function userIdByName(name){
+  var n=String(name||'').trim().toLowerCase();
+  if(!n) return null;
+  var u=DB.usuarios.find(function(x){return String(x.nombre||'').trim().toLowerCase()===n || String(x.username||'').trim().toLowerCase()===n;});
+  return u&&u.id||null;
+}
+function renderDeviceQr(code){
+  var el=document.getElementById('pk-qr-code');
+  if(!el) return;
+  if(window.QRCode){
+    el.innerHTML='';
+    new QRCode(el,{text:String(code||''),width:132,height:132,correctLevel:QRCode.CorrectLevel.M});
+  }
 }
 
 /* CLIENTES */
@@ -2370,6 +2511,143 @@ var A = {
     var ok = await del('prokicks_records',id);
     if(ok){ await refresh(); toast('Registro eliminado','g'); }
   },
+  pkNewDevice: function(){
+    if(!canUseProkicks()){ toast('Sin permiso para Inventario ProKicks','r'); return; }
+    var code=pkNextDeviceCode();
+    mOpen('Nuevo dispositivo · '+code,
+      '<div class="fg">'+FLD('code','Código único','text',code)
+      +'<div class="fr2">'+FSL('st','Estado',PK_DEVICE_STATUSES.map(function(s){return[s,s];}),'Disponible')+FSL('rp','Responsable',[['','Sin responsable']].concat(DB.usuarios.filter(function(u){return u.activo!==false;}).map(function(u){return[u.id,u.nombre];})),'')+'</div>'
+      +'<div class="fr2">'+FSL('cl','Cliente registrado',[['','Sin cliente']].concat(DB.clientes.map(function(c){return[c.id,c.nombre];})),'')+FLD('cn','Cliente manual','text','')+'</div>'
+      +'<div class="fr2">'+FLD('ub','Ubicación','text','')+FLD('fd','Fecha devolución prevista','date','')+'</div>'
+      +FTA('nt','Notas','')
+      +'<div class="hbar"><span class="dot dg"></span>El QR debe contener solo este código: <strong>'+esc(code)+'</strong></div>'
+      +'<div class="fa"><button class="btn btng" onclick="mClose()">Cancelar</button><button class="btn btnc" onclick="A.pkSaveDevice()">Guardar dispositivo</button></div></div>',true);
+  },
+  pkSaveDevice: async function(){
+    var p=pkProject(), code=String(fv('code')||'').trim().toUpperCase();
+    if(!/^PK-\d{4,}$/.test(code)){toast('Código inválido. Usa formato PK-0001','r');return;}
+    if(DB.inventory_devices.some(function(d){return String(d.code).toUpperCase()===code;})){toast('Ese código ya existe','r');return;}
+    var payload={code:code,status:fv('st')||'Disponible',proyecto_id:p&&p.id||null,cliente_id:fv('cl')||null,cliente_nombre:fv('cn')||null,responsable_id:fv('rp')||null,ubicacion:fv('ub')||null,fecha_devolucion_prevista:fv('fd')||null,notas:fv('nt')||null,created_by:SES.userId,updated_by:SES.userId};
+    var d=await ins('inventory_devices',payload); if(!d)return;
+    await ins('inventory_movements',{device_id:d.id,code:d.code,movement_type:'alta',new_status:d.status,cliente_id:d.cliente_id,cliente_nombre:d.cliente_nombre,responsable_id:d.responsable_id,fecha_devolucion_prevista:d.fecha_devolucion_prevista,notas:'Alta manual de dispositivo.',created_by:SES.userId});
+    mClose(); await refresh(); PKTAB='inventario'; toast('Dispositivo '+code+' creado ✓','g');
+  },
+  pkSeedLocalDevices: async function(){
+    if(!canUseProkicks()){ toast('Sin permiso para Inventario ProKicks','r'); return; }
+    var p=pkProject(), created=0;
+    for(var i=1;i<=200;i++){
+      var code='PK-'+String(i).padStart(4,'0');
+      if(DB.inventory_devices.some(function(d){return d.code===code;})) continue;
+      var d=await ins('inventory_devices',{code:code,status:'Disponible',proyecto_id:p&&p.id||null,notas:'Carga inicial de 200 dispositivos ProKicks.',created_by:SES.userId,updated_by:SES.userId});
+      if(d){created++; await ins('inventory_movements',{device_id:d.id,code:d.code,movement_type:'alta',new_status:'Disponible',notas:'Carga inicial desde SM OS.',created_by:SES.userId});}
+    }
+    await refresh(); PKTAB='inventario'; toast(created?('Carga inicial: '+created+' dispositivos creados ✓'):'Los 200 dispositivos ya existen','g');
+  },
+  pkDeviceDetail: function(id){
+    var d=DB.inventory_devices.find(function(x){return x.id===id;}); if(!d){toast('Dispositivo no encontrado','r');return;}
+    var moves=pkMovements(id);
+    var qr='<div class="qr-code-box" data-code="'+esc(d.code)+'"><div id="pk-qr-code" class="qr-render"><div class="qr-placeholder">'+esc(d.code)+'</div></div><div class="muted-mini">El QR contiene solo: '+esc(d.code)+'</div></div>';
+    var rows=moves.map(function(m){return '<tr><td>'+fmtdt(m.created_at)+'</td><td>'+esc(PK_MOVEMENT_LABELS[m.movement_type]||m.movement_type)+'</td><td>'+pkDeviceStatusBadge(m.previous_status||'')+' → '+pkDeviceStatusBadge(m.new_status||'')+'</td><td>'+esc(m.cliente_nombre||(m.cliente_id?cNm(m.cliente_id):'—'))+'</td><td>'+esc(m.responsable_id?uNm(m.responsable_id):'—')+'</td><td>'+esc(m.notas||'—')+'</td></tr>';}).join('')||'<tr><td colspan="6">Sin movimientos registrados.</td></tr>';
+    mOpen('Ficha dispositivo · '+d.code,
+      '<div class="inventory-detail"><div class="card inv-device-card"><div class="ch"><h3>'+esc(d.code)+'</h3>'+pkDeviceStatusBadge(d.status)+'</div>'
+      +'<div class="inv-detail-grid"><div><span>Cliente</span><strong>'+esc(pkDeviceClientName(d))+'</strong></div><div><span>Responsable</span><strong>'+esc(pkDeviceOwnerName(d))+'</strong></div><div><span>Ubicación</span><strong>'+esc(d.ubicacion||'—')+'</strong></div><div><span>Devolución</span><strong>'+fmt(d.fecha_devolucion_prevista)+'</strong></div></div>'
+      +'<p class="inv-notes">'+esc(d.notas||'Sin notas.')+'</p><div class="operational-actions"><button class="btn btns btnc" onclick="A.pkMoveDevice(\''+d.id+'\',\'salida\')">Registrar salida</button><button class="btn btns btng" onclick="A.pkMoveDevice(\''+d.id+'\',\'entrada\')">Entrada</button><button class="btn btns btng" onclick="A.pkMoveDevice(\''+d.id+'\',\'devolucion\')">Devolución</button><button class="btn btns btng" onclick="A.pkMoveDevice(\''+d.id+'\',\'asignacion_cliente\')">Asignar cliente</button><button class="btn btns btng" onclick="A.pkMoveDevice(\''+d.id+'\',\'mantenimiento\')">Mantenimiento</button></div></div>'
+      +qr+'<div class="card"><div class="ch"><h3>Historial completo</h3><span class="chip">'+moves.length+' movimiento(s)</span></div><div class="tw"><table class="history-table"><thead><tr><th>Fecha</th><th>Movimiento</th><th>Estado</th><th>Cliente</th><th>Resp.</th><th>Notas</th></tr></thead><tbody>'+rows+'</tbody></table></div></div></div>',true);
+    renderDeviceQr(d.code);
+  },
+  pkMoveDevice: function(id,type){
+    if(!canUseProkicks()){ toast('Sin permiso para Inventario ProKicks','r'); return; }
+    var d=DB.inventory_devices.find(function(x){return x.id===id;}); if(!d)return;
+    var defaultStatus={salida:'En demostración',entrada:'Disponible',devolucion:'Disponible',asignacion_cliente:d.status||'Prestado',mantenimiento:'Mantenimiento'}[type]||d.status;
+    mOpen((PK_MOVEMENT_LABELS[type]||'Movimiento')+' · '+d.code,
+      '<div class="fg"><div class="hbar"><span class="dot dg"></span>Estado actual: <strong>'+esc(d.status)+'</strong></div>'
+      +'<div class="fr2">'+FSL('st','Nuevo estado',PK_DEVICE_STATUSES.map(function(s){return[s,s];}),defaultStatus)+FSL('rp','Responsable',[['','Sin responsable']].concat(DB.usuarios.filter(function(u){return u.activo!==false;}).map(function(u){return[u.id,u.nombre];})),d.responsable_id||'')+'</div>'
+      +'<div class="fr2">'+FSL('cl','Cliente registrado',[['','Sin cliente']].concat(DB.clientes.map(function(c){return[c.id,c.nombre];})),d.cliente_id||'')+FLD('cn','Cliente manual','text',d.cliente_nombre||'')+'</div>'
+      +'<div class="fr2">'+FLD('ub','Ubicación','text',d.ubicacion||'')+FLD('fd','Fecha devolución prevista','date',d.fecha_devolucion_prevista||'')+'</div>'
+      +FTA('nt','Comentario / motivo','')
+      +'<div class="fa"><button class="btn btng" onclick="mClose()">Cancelar</button><button class="btn btnc" onclick="A.pkSaveMovement(\''+id+'\',\''+type+'\')">Guardar movimiento</button></div></div>',true);
+  },
+  pkSaveMovement: async function(id,type){
+    var d=DB.inventory_devices.find(function(x){return x.id===id;}); if(!d)return;
+    var newStatus=fv('st')||d.status, clienteId=fv('cl')||null, clienteNombre=fv('cn')||null, resp=fv('rp')||null, due=fv('fd')||null;
+    var updData={status:newStatus,cliente_id:clienteId,cliente_nombre:clienteNombre,responsable_id:resp,ubicacion:fv('ub')||null,fecha_devolucion_prevista:due,updated_by:SES.userId};
+    if(['entrada','devolucion'].indexOf(type)>=0){updData.fecha_entrada=today(); if(newStatus==='Disponible') updData.fecha_devolucion_prevista=null;}
+    if(type==='salida') updData.fecha_salida=today();
+    var saved=await upd('inventory_devices',id,updData); if(!saved)return;
+    await ins('inventory_movements',{device_id:id,code:d.code,movement_type:type,previous_status:d.status,new_status:newStatus,cliente_id:clienteId,cliente_nombre:clienteNombre,responsable_id:resp,fecha_devolucion_prevista:updData.fecha_devolucion_prevista,notas:fv('nt')||null,created_by:SES.userId});
+    mClose(); await refresh(); PKTAB='inventario'; toast('Movimiento registrado ✓','g');
+  },
+  pkOpenScanner: async function(){
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){toast('Este navegador no permite cámara aquí','r');return;}
+    mOpen('Escanear QR ProKicks','<div class="scanner-box"><video id="pk-scan-video" autoplay playsinline></video><div class="scanner-help">Apunta al QR. Debe contener solo el código, por ejemplo PK-0047.</div><div class="operational-actions"><button class="btn btng" onclick="A.pkCloseScanner()">Cerrar cámara</button></div></div>',true);
+    try{
+      PKINV_SCAN.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+      var video=document.getElementById('pk-scan-video'); video.srcObject=PKINV_SCAN.stream;
+      if(!('BarcodeDetector' in window)){toast('Escáner automático no disponible. Usa búsqueda manual por código.','r');return;}
+      var detector=new BarcodeDetector({formats:['qr_code']});
+      PKINV_SCAN.timer=setInterval(async function(){
+        if(!video || video.readyState<2) return;
+        try{
+          var codes=await detector.detect(video);
+          if(codes && codes[0] && codes[0].rawValue){ A.pkHandleScannedCode(codes[0].rawValue); }
+        }catch(e){}
+      },700);
+    }catch(e){toast('No se pudo abrir la cámara','r');}
+  },
+  pkCloseScanner: function(){
+    if(PKINV_SCAN.timer) clearInterval(PKINV_SCAN.timer);
+    PKINV_SCAN.timer=null;
+    if(PKINV_SCAN.stream){PKINV_SCAN.stream.getTracks().forEach(function(t){t.stop();});}
+    PKINV_SCAN.stream=null;
+    mClose();
+  },
+  pkHandleScannedCode: function(raw){
+    var code=String(raw||'').trim().toUpperCase();
+    if(!/^PK-\d{4,}$/.test(code)) return;
+    A.pkCloseScanner();
+    var d=DB.inventory_devices.find(function(x){return String(x.code).toUpperCase()===code;});
+    if(d) A.pkDeviceDetail(d.id);
+    else {PKINV_FILTERS.q=code;PKTAB='inventario';render();toast('Código no encontrado: '+code,'r');}
+  },
+  pkImportDevices: function(){
+    if(!canUseProkicks()){ toast('Sin permiso para Inventario ProKicks','r'); return; }
+    mOpen('Importar inventario ProKicks','<div class="fg"><div class="hbar"><span class="dot dg"></span>Columnas aceptadas: code, status, cliente_nombre, responsable, ubicacion, fecha_devolucion_prevista, notas.</div><input id="pk-import-file" type="file" accept=".csv,.txt,.xlsx,.xls"><div class="fa"><button class="btn btng" onclick="mClose()">Cancelar</button><button class="btn btnc" onclick="A.pkProcessImport()">Importar</button></div></div>',true);
+  },
+  pkProcessImport: async function(){
+    var file=document.getElementById('pk-import-file')&&document.getElementById('pk-import-file').files[0];
+    if(!file){toast('Selecciona un archivo','r');return;}
+    var rows=[];
+    if(/\.xlsx?$/i.test(file.name) && !window.XLSX){toast('No se pudo cargar el lector de Excel. Exporta la hoja como CSV e intenta de nuevo.','r');return;}
+    if(/\.xlsx?$/i.test(file.name) && window.XLSX){
+      var buf=await file.arrayBuffer(), wb=XLSX.read(buf,{type:'array'}), ws=wb.Sheets[wb.SheetNames[0]];
+      rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+    }else{
+      var text=await file.text();
+      rows=parseCsvRows(text);
+    }
+    var p=pkProject(), created=0, updated=0;
+    for(var i=0;i<rows.length;i++){
+      var r=normalizeImportRow(rows[i]), code=String(r.code||'').trim().toUpperCase();
+      if(!/^PK-\d{4,}$/.test(code)) continue;
+      var status=PK_DEVICE_STATUSES.indexOf(r.status)>=0?r.status:'Disponible';
+      var respId=userIdByName(r.responsable), existing=DB.inventory_devices.find(function(d){return String(d.code).toUpperCase()===code;});
+      var payload={code:code,status:status,proyecto_id:p&&p.id||null,cliente_nombre:r.cliente_nombre||null,responsable_id:respId||null,ubicacion:r.ubicacion||null,fecha_devolucion_prevista:r.fecha_devolucion_prevista||null,notas:r.notas||null,updated_by:SES.userId};
+      if(existing){await upd('inventory_devices',existing.id,payload); updated++;}
+      else{
+        payload.created_by=SES.userId;
+        var d=await ins('inventory_devices',payload);
+        if(d){created++; await ins('inventory_movements',{device_id:d.id,code:d.code,movement_type:'importacion',new_status:d.status,cliente_nombre:d.cliente_nombre,responsable_id:d.responsable_id,fecha_devolucion_prevista:d.fecha_devolucion_prevista,notas:'Importación CSV/Excel.',created_by:SES.userId});}
+      }
+    }
+    mClose(); await refresh(); PKTAB='inventario'; toast('Importación lista: '+created+' nuevos, '+updated+' actualizados','g');
+  },
+  pkExportDevices: function(){
+    var rows=pkInventoryFiltered();
+    var cols=['code','status','cliente','responsable','ubicacion','fecha_salida','fecha_devolucion_prevista','fecha_entrada','notas'];
+    var csv=[cols.join(',')].concat(rows.map(function(d){return [d.code,d.status,pkDeviceClientName(d),pkDeviceOwnerName(d),d.ubicacion||'',d.fecha_salida||'',d.fecha_devolucion_prevista||'',d.fecha_entrada||'',d.notas||''].map(csvCell).join(',');})).join('\n');
+    var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); a.download='inventario-prokicks.csv'; a.click(); setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
+  },
+  pkClearInventoryFilters: function(){PKINV_FILTERS={status:'',cliente:'',responsable:'',vencida:'',q:''};render();},
 
   /* CLIENTE */
   nc: function(){ A._cm(null); },
@@ -2600,7 +2878,7 @@ setInterval(updClock, 60000);
 })();
 
 /* ── REALTIME ── */
-var TABLES = ['proyectos','tareas','subtareas','comentarios','entregables','pagos','clientes','usuarios','reuniones','prokicks_records','prokicks_settings'];
+var TABLES = ['proyectos','tareas','subtareas','comentarios','entregables','pagos','clientes','usuarios','reuniones','prokicks_records','prokicks_settings','inventory_devices','inventory_movements'];
 TABLES.forEach(function(tbl){
   sb.channel('rt:'+tbl)
     .on('postgres_changes',{event:'*',schema:'public',table:tbl},function(){
