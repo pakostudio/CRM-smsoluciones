@@ -569,6 +569,65 @@ tr:hover td{background:var(--surface2)}
   .row-actions .action-delete{grid-column:1/-1}
 }
 
+/* SM OS 2.4.16 · Icon navigation pass */
+.section-sub{font-size:13px;color:var(--muted);font-weight:650;margin-top:4px}
+.pk-hero{padding:6px 0 4px}
+.tabs-premium{
+  gap:12px;
+  overflow-x:auto;
+  padding:10px 2px 0;
+  border-bottom:1px solid rgba(11,37,71,.10);
+  scrollbar-width:thin;
+}
+.tabs-premium .tab{
+  min-height:54px;
+  display:inline-flex;
+  align-items:center;
+  gap:9px;
+  border:1px solid transparent;
+  border-bottom:0;
+  padding:11px 16px 12px;
+  color:#66758a;
+  background:transparent;
+  white-space:nowrap;
+}
+.tabs-premium .tab svg{
+  width:18px;
+  height:18px;
+  stroke-width:2.35;
+}
+.tabs-premium .tab span{line-height:1}
+.tabs-premium .tab:hover{
+  background:#fff;
+  color:var(--navy);
+  border-color:rgba(11,37,71,.08);
+  box-shadow:0 10px 24px rgba(11,37,71,.055);
+}
+.tabs-premium .tab.active{
+  color:var(--navy);
+  border-color:rgba(11,37,71,.10);
+  background:linear-gradient(180deg,#fff,#fbfdff);
+  box-shadow:0 16px 34px rgba(11,37,71,.08);
+}
+.tabs-premium .tab.active svg{color:var(--cyan)}
+.tabs-premium .tab.active:after{
+  left:18px;
+  right:18px;
+  height:4px;
+  bottom:-1px;
+  box-shadow:0 -1px 10px rgba(0,170,221,.35);
+}
+.pk-tabs .tab.active{min-width:170px;justify-content:center}
+.sh h2{letter-spacing:-.025em}
+.sh .btnc{min-height:44px;border-radius:13px;padding-left:17px;padding-right:17px}
+.topbar .chip{border-radius:11px}
+.nbtn svg,.project-mark svg{stroke-width:2.35}
+@media(max-width:760px){
+  .tabs-premium{gap:8px;padding-top:6px}
+  .tabs-premium .tab{min-height:46px;padding:9px 12px;font-size:12px}
+  .pk-tabs .tab.active{min-width:auto}
+}
+
 /* SM OS 2.4.2 — OFUNAM / tablero ancho corregido
    La vista de Grupos y registros elimina la columna de último comentario
    para evitar desbordes y conservar acciones visibles. */

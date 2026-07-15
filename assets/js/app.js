@@ -122,6 +122,12 @@ function canEditTask(t){
 }
 function iconHtml(name){ return '<i data-lucide="'+esc(name||'folder')+'"></i>'; }
 function hydrateIcons(){ try{ if(window.lucide) window.lucide.createIcons(); }catch(e){} }
+function tabIcon(key){
+  return ({mando:'layout-dashboard',tareas:'list-checks',reporte:'file-bar-chart',historial:'history',kanban:'columns-3',calendario:'calendar-days',gantt:'chart-gantt',pipeline:'chart-no-axes-column-increasing',dashboard:'gauge',inventario:'scan-line',prospecto:'radar',cliente:'users',venta:'badge-dollar-sign',comodato:'handshake',cobranza:'wallet-cards'})[key] || 'circle';
+}
+function tabButton(key,label,active,onclick){
+  return '<button class="tab '+(active?'active':'')+'" onclick="'+onclick+'">'+iconHtml(tabIcon(key))+'<span>'+esc(label)+'</span></button>';
+}
 function projectMetaLine(desc,key){ var m=String(desc||'').match(new RegExp('^\\s*'+key+'\\s*:\\s*(.+)$','im')); return m?m[1].trim():''; }
 function stripProjectMeta(desc){ return String(desc||'').split(/\r?\n/).filter(function(line){return !/^\s*(Categoria|Categoría|Icono|Color|Frentes)\s*:/i.test(line);}).join('\n').trim(); }
 function suggestProjectVisual(name,desc){
@@ -1113,7 +1119,7 @@ function executiveReportText(pid){
 function projectTabs(p){
   var mainLabel = isProkicksProject(p) ? 'Plan de trabajo' : (isOfunamProject(p) ? 'Grupos y registros' : 'Tablero operativo');
   var tabs=[['mando','Centro de mando'],['tareas',mainLabel],['reporte','Reporte'],['historial','Historial'],['kanban','Kanban'],['calendario','Calendario'],['gantt','Gantt'],['pipeline','Pipeline']];
-  return '<div class="tabs">'+tabs.map(function(t){return '<button class="tab '+(PTAB===t[0]?'active':'')+'" onclick="A.openProject(\''+p.id+'\',\''+t[0]+'\')">'+t[1]+'</button>';}).join('')+'</div>';
+  return '<div class="tabs tabs-premium">'+tabs.map(function(t){return tabButton(t[0],t[1],PTAB===t[0],"A.openProject('"+p.id+"','"+t[0]+"')");}).join('')+'</div>';
 }
 function projectKanbanHtml(p){
   var tasks=projectTasks(p.id);
@@ -1643,12 +1649,12 @@ function vPK(){
   var p=pkProject();
   if(!p) return '<div class="card"><div class="empty"><div class="ei">⚽</div><p>No existe el proyecto ProKicks.</p></div></div>';
   if(!canUseProkicks()) return '<div class="card"><div class="empty"><div class="ei">🔒</div><p>Este módulo solo está disponible para admin o responsables de ProKicks.</p></div></div>';
-  var tabs=PKTABS.map(function(t){return '<button class="tab '+(PKTAB===t[0]?'active':'')+'" onclick="PKTAB=\''+t[0]+'\';render()">'+t[1]+'</button>';}).join('');
+  var tabs=PKTABS.map(function(t){return tabButton(t[0],t[1],PKTAB===t[0],"PKTAB='"+t[0]+"';render()");}).join('');
   var body=PKTAB==='dashboard'?pkDashboard():(PKTAB==='inventario'?pkInventoryView():pkTable(PKTAB));
   var action = PKTAB==='inventario' && DB.inventory_ready
     ? '<button class="btn btnc" onclick="A.pkNewDevice()">'+iconHtml('plus')+' Nuevo dispositivo</button>'
     : (PKTAB!=='dashboard'?'<button class="btn btnc" onclick="A.pkNew()">+ Nuevo registro</button>':'');
-  return '<div class="sh"><h2>Operación ProKicks</h2>'+action+'</div><div class="tabs">'+tabs+'</div>'+body;
+  return '<div class="sh pk-hero"><div><h2>Operación ProKicks</h2><div class="section-sub">Inventario, ventas, comodatos y cobranza conectados al control QR.</div></div>'+action+'</div><div class="tabs tabs-premium pk-tabs">'+tabs+'</div>'+body;
 }
 function pkDashboard(){
   var st=pkSetting(), ventas=pkRows('venta'), comodatos=pkRows('comodato'), prospectos=pkRows('prospecto');
