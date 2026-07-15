@@ -1,5 +1,6 @@
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://bljqlibgwvpflrtwgsef.supabase.co';
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://diqbmyqvuyollvlvjniz.supabase.co';
+const SUPABASE_API_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '';
+const HAS_SUPABASE_WRITE_KEY = Boolean(SUPABASE_API_KEY);
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const ALERT_FROM_EMAIL = process.env.ALERT_FROM_EMAIL || 'SM OS <alerts@resend.dev>';
 const ALERT_REPLY_TO = process.env.ALERT_REPLY_TO || '';
@@ -13,7 +14,7 @@ function json(res, status, payload) {
 function assertServerConfig() {
   const missing = [];
   if (!SUPABASE_URL) missing.push('SUPABASE_URL');
-  if (!SUPABASE_SERVICE_ROLE_KEY) missing.push('SUPABASE_SERVICE_ROLE_KEY');
+  if (!SUPABASE_API_KEY) missing.push('SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY');
   if (!RESEND_API_KEY) missing.push('RESEND_API_KEY');
   if (!ALERT_FROM_EMAIL) missing.push('ALERT_FROM_EMAIL');
   return missing;
@@ -21,8 +22,8 @@ function assertServerConfig() {
 
 function supabaseHeaders(extra) {
   return Object.assign({
-    apikey: SUPABASE_SERVICE_ROLE_KEY,
-    Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+    apikey: SUPABASE_API_KEY,
+    Authorization: `Bearer ${SUPABASE_API_KEY}`,
     'Content-Type': 'application/json',
   }, extra || {});
 }
@@ -37,7 +38,7 @@ async function supabaseSelect(table, query) {
 }
 
 async function supabaseInsert(table, row) {
-  if (!SUPABASE_SERVICE_ROLE_KEY) return null;
+  if (!HAS_SUPABASE_WRITE_KEY) return null;
   const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
     method: 'POST',
     headers: supabaseHeaders({ Prefer: 'return=representation' }),
