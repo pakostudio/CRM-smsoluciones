@@ -70,7 +70,7 @@ try{
 }catch(e){}
 
 /* ── STATE ── */
-var DB = {usuarios:[],clientes:[],proyectos:[],tareas:[],subtareas:[],comentarios:[],entregables:[],pagos:[],reuniones:[],prokicks_records:[],prokicks_settings:[],inventory_devices:[],inventory_movements:[],inventory_ready:true,notification_preferences:[],usage_events:[]};
+var DB = {usuarios:[],clientes:[],proyectos:[],tareas:[],subtareas:[],comentarios:[],entregables:[],pagos:[],reuniones:[],prokicks_records:[],prokicks_settings:[],inventory_devices:[],inventory_movements:[],inventory_ready:true,inventory_backend:'native',notification_preferences:[],usage_events:[]};
 var SES = null;  // {userId}
 var VIEW = 'dashboard';
 var FPID = '';   // filter project id
@@ -560,9 +560,16 @@ async function loadAll(){
     DB.prokicks_settings = pkset.error ? [] : (pkset.data||[]);
     var invDevices = await sb.from('inventory_devices').select('*').order('code');
     var invMoves = await sb.from('inventory_movements').select('*').order('created_at',{ascending:false});
-    DB.inventory_ready = !invDevices.error && !invMoves.error;
-    DB.inventory_devices = invDevices.error ? [] : (invDevices.data||[]);
-    DB.inventory_movements = invMoves.error ? [] : (invMoves.data||[]);
+    if(!invDevices.error && !invMoves.error){
+      DB.inventory_ready = true;
+      DB.inventory_backend = 'native';
+      DB.inventory_devices = invDevices.data||[];
+      DB.inventory_movements = invMoves.data||[];
+    }else{
+      DB.inventory_ready = true;
+      DB.inventory_backend = 'records';
+      loadInventoryFromProkicksRecords();
+    }
     var prefs = await sb.from('notification_preferences').select('*');
     DB.notification_preferences = prefs.error ? [] : (prefs.data||[]);
     if(await normalizeProjectGroups()){
@@ -1450,6 +1457,37 @@ function canUseProkicks(){
   return DB.tareas.some(function(t){ return t.proyecto_id===p.id && t.owner_id===SES.userId; });
 }
 function pkRows(tipo){ var p=pkProject(); return p ? DB.prokicks_records.filter(function(r){return r.proyecto_id===p.id && r.tipo===tipo;}) : []; }
+function loadInventoryFromProkicksRecords(){
+  var p=pkProject(), pid=p&&p.id;
+  var devices=DB.prokicks_records.filter(function(r){return (!pid || r.proyecto_id===pid) && r.tipo==='inventory_device';}).map(function(r){
+    return Object.assign({id:r.id,proyecto_id:r.proyecto_id,created_at:r.created_at,updated_at:r.updated_at,_record_id:r.id},r.data||{});
+  });
+  var moves=DB.prokicks_records.filter(function(r){return (!pid || r.proyecto_id===pid) && r.tipo==='inventory_movement';}).map(function(r){
+    return Object.assign({id:r.id,proyecto_id:r.proyecto_id,created_at:r.created_at,_record_id:r.id},r.data||{});
+  });
+  DB.inventory_devices=devices;
+  DB.inventory_movements=moves;
+}
+async function pkInvInsertDevice(payload){
+  if(DB.inventory_backend==='native') return await ins('inventory_devices',payload);
+  var p=pkProject();
+  var r=await ins('prokicks_records',{proyecto_id:p&&p.id||payload.proyecto_id||null,owner_id:SES.userId,tipo:'inventory_device',data:payload,updated_at:new Date().toISOString()});
+  return r ? Object.assign({id:r.id,created_at:r.created_at,updated_at:r.updated_at,_record_id:r.id},r.data||{}) : null;
+}
+async function pkInvUpdateDevice(id,payload){
+  if(DB.inventory_backend==='native') return await upd('inventory_devices',id,payload);
+  var old=DB.inventory_devices.find(function(d){return d.id===id;})||{};
+  var data=Object.assign({},old,payload,{updated_at:new Date().toISOString()});
+  delete data._record_id;
+  var r=await upd('prokicks_records',id,{data:data,updated_at:new Date().toISOString()});
+  return r ? Object.assign({id:r.id,created_at:r.created_at,updated_at:r.updated_at,_record_id:r.id},r.data||{}) : null;
+}
+async function pkInvInsertMovement(payload){
+  if(DB.inventory_backend==='native') return await ins('inventory_movements',payload);
+  var p=pkProject();
+  var r=await ins('prokicks_records',{proyecto_id:p&&p.id||null,owner_id:SES.userId,tipo:'inventory_movement',data:payload,updated_at:new Date().toISOString()});
+  return r ? Object.assign({id:r.id,created_at:r.created_at,_record_id:r.id},r.data||{}) : null;
+}
 function pkDevices(){ return DB.inventory_devices.slice().sort(function(a,b){return String(a.code||'').localeCompare(String(b.code||''));}); }
 function pkMovements(deviceId){ return DB.inventory_movements.filter(function(m){return m.device_id===deviceId;}).sort(function(a,b){return String(b.created_at||'').localeCompare(String(a.created_at||''));}); }
 function pkDeviceStatusBadge(st){
@@ -1573,9 +1611,9 @@ function pkDashboard(){
 }
 function pkInventoryView(){
   var rows=pkInventoryFiltered(), all=pkDevices();
-  if(!DB.inventory_ready){
-    return '<div class="card"><div class="empty"><div class="ei">📦</div><p><strong>Migración pendiente.</strong></p><p>Ejecuta <code>supabase/prokicks-inventory.sql</code> en Supabase para crear <code>inventory_devices</code>, <code>inventory_movements</code> y cargar PK-0001 a PK-0200.</p></div></div>';
-  }
+  var backendNote = DB.inventory_backend==='records'
+    ? '<div class="hbar inv-backend-note"><span class="dot dy"></span>Modo operativo activo: datos guardados en ProKicks hasta aplicar la migración formal de Supabase.</div>'
+    : '';
   var byStatus=PK_DEVICE_STATUSES.map(function(s){return [s,all.filter(function(d){return d.status===s;}).length];});
   var vencidas=all.filter(pkReturnOverdue).length;
   var statusOps='<option value="">Todos</option>'+PK_DEVICE_STATUSES.map(function(s){return '<option value="'+esc(s)+'"'+(PKINV_FILTERS.status===s?' selected':'')+'>'+esc(s)+'</option>';}).join('');
@@ -1606,7 +1644,7 @@ function pkInventoryView(){
   if(!all.length){
     body='<tr><td colspan="8"><div class="empty"><div class="ei">📦</div><p>No hay dispositivos cargados. Ejecuta la migración SQL o usa importación CSV.</p></div></td></tr>';
   }
-  return '<div class="inventory-shell">'
+  return '<div class="inventory-shell">'+backendNote
     +'<div class="sg inv-kpis">'+metricCards+'</div>'
     +'<div class="card"><div class="ch"><h3>Control de dispositivos</h3><div class="operational-actions"><button class="btn btns btng" onclick="A.pkSeedLocalDevices()">Preparar PK-0001 a PK-0200</button><button class="btn btns btng" onclick="A.pkOpenScanner()">'+iconHtml('scan-line')+' Escanear QR</button><button class="btn btns btng" onclick="A.pkImportDevices()">Importar CSV/Excel</button><button class="btn btns btng" onclick="A.pkExportDevices()">Exportar CSV</button></div></div>'
     +'<div class="inv-status-strip">'+statusStrip+'</div>'
@@ -2528,8 +2566,8 @@ var A = {
     if(!/^PK-\d{4,}$/.test(code)){toast('Código inválido. Usa formato PK-0001','r');return;}
     if(DB.inventory_devices.some(function(d){return String(d.code).toUpperCase()===code;})){toast('Ese código ya existe','r');return;}
     var payload={code:code,status:fv('st')||'Disponible',proyecto_id:p&&p.id||null,cliente_id:fv('cl')||null,cliente_nombre:fv('cn')||null,responsable_id:fv('rp')||null,ubicacion:fv('ub')||null,fecha_devolucion_prevista:fv('fd')||null,notas:fv('nt')||null,created_by:SES.userId,updated_by:SES.userId};
-    var d=await ins('inventory_devices',payload); if(!d)return;
-    await ins('inventory_movements',{device_id:d.id,code:d.code,movement_type:'alta',new_status:d.status,cliente_id:d.cliente_id,cliente_nombre:d.cliente_nombre,responsable_id:d.responsable_id,fecha_devolucion_prevista:d.fecha_devolucion_prevista,notas:'Alta manual de dispositivo.',created_by:SES.userId});
+    var d=await pkInvInsertDevice(payload); if(!d)return;
+    await pkInvInsertMovement({device_id:d.id,code:d.code,movement_type:'alta',new_status:d.status,cliente_id:d.cliente_id,cliente_nombre:d.cliente_nombre,responsable_id:d.responsable_id,fecha_devolucion_prevista:d.fecha_devolucion_prevista,notas:'Alta manual de dispositivo.',created_by:SES.userId});
     mClose(); await refresh(); PKTAB='inventario'; toast('Dispositivo '+code+' creado ✓','g');
   },
   pkSeedLocalDevices: async function(){
@@ -2538,8 +2576,8 @@ var A = {
     for(var i=1;i<=200;i++){
       var code='PK-'+String(i).padStart(4,'0');
       if(DB.inventory_devices.some(function(d){return d.code===code;})) continue;
-      var d=await ins('inventory_devices',{code:code,status:'Disponible',proyecto_id:p&&p.id||null,notas:'Carga inicial de 200 dispositivos ProKicks.',created_by:SES.userId,updated_by:SES.userId});
-      if(d){created++; await ins('inventory_movements',{device_id:d.id,code:d.code,movement_type:'alta',new_status:'Disponible',notas:'Carga inicial desde SM OS.',created_by:SES.userId});}
+      var d=await pkInvInsertDevice({code:code,status:'Disponible',proyecto_id:p&&p.id||null,notas:'Carga inicial de 200 dispositivos ProKicks.',created_by:SES.userId,updated_by:SES.userId});
+      if(d){created++; await pkInvInsertMovement({device_id:d.id,code:d.code,movement_type:'alta',new_status:'Disponible',notas:'Carga inicial desde SM OS.',created_by:SES.userId});}
     }
     await refresh(); PKTAB='inventario'; toast(created?('Carga inicial: '+created+' dispositivos creados ✓'):'Los 200 dispositivos ya existen','g');
   },
@@ -2573,8 +2611,8 @@ var A = {
     var updData={status:newStatus,cliente_id:clienteId,cliente_nombre:clienteNombre,responsable_id:resp,ubicacion:fv('ub')||null,fecha_devolucion_prevista:due,updated_by:SES.userId};
     if(['entrada','devolucion'].indexOf(type)>=0){updData.fecha_entrada=today(); if(newStatus==='Disponible') updData.fecha_devolucion_prevista=null;}
     if(type==='salida') updData.fecha_salida=today();
-    var saved=await upd('inventory_devices',id,updData); if(!saved)return;
-    await ins('inventory_movements',{device_id:id,code:d.code,movement_type:type,previous_status:d.status,new_status:newStatus,cliente_id:clienteId,cliente_nombre:clienteNombre,responsable_id:resp,fecha_devolucion_prevista:updData.fecha_devolucion_prevista,notas:fv('nt')||null,created_by:SES.userId});
+    var saved=await pkInvUpdateDevice(id,updData); if(!saved)return;
+    await pkInvInsertMovement({device_id:id,code:d.code,movement_type:type,previous_status:d.status,new_status:newStatus,cliente_id:clienteId,cliente_nombre:clienteNombre,responsable_id:resp,fecha_devolucion_prevista:updData.fecha_devolucion_prevista,notas:fv('nt')||null,created_by:SES.userId});
     mClose(); await refresh(); PKTAB='inventario'; toast('Movimiento registrado ✓','g');
   },
   pkOpenScanner: async function(){
@@ -2632,11 +2670,11 @@ var A = {
       var status=PK_DEVICE_STATUSES.indexOf(r.status)>=0?r.status:'Disponible';
       var respId=userIdByName(r.responsable), existing=DB.inventory_devices.find(function(d){return String(d.code).toUpperCase()===code;});
       var payload={code:code,status:status,proyecto_id:p&&p.id||null,cliente_nombre:r.cliente_nombre||null,responsable_id:respId||null,ubicacion:r.ubicacion||null,fecha_devolucion_prevista:r.fecha_devolucion_prevista||null,notas:r.notas||null,updated_by:SES.userId};
-      if(existing){await upd('inventory_devices',existing.id,payload); updated++;}
+      if(existing){await pkInvUpdateDevice(existing.id,payload); updated++;}
       else{
         payload.created_by=SES.userId;
-        var d=await ins('inventory_devices',payload);
-        if(d){created++; await ins('inventory_movements',{device_id:d.id,code:d.code,movement_type:'importacion',new_status:d.status,cliente_nombre:d.cliente_nombre,responsable_id:d.responsable_id,fecha_devolucion_prevista:d.fecha_devolucion_prevista,notas:'Importación CSV/Excel.',created_by:SES.userId});}
+        var d=await pkInvInsertDevice(payload);
+        if(d){created++; await pkInvInsertMovement({device_id:d.id,code:d.code,movement_type:'importacion',new_status:d.status,cliente_nombre:d.cliente_nombre,responsable_id:d.responsable_id,fecha_devolucion_prevista:d.fecha_devolucion_prevista,notas:'Importación CSV/Excel.',created_by:SES.userId});}
       }
     }
     mClose(); await refresh(); PKTAB='inventario'; toast('Importación lista: '+created+' nuevos, '+updated+' actualizados','g');
