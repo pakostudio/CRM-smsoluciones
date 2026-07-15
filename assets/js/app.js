@@ -79,7 +79,7 @@ var SELUID = ''; // selected user on login
 var PKTAB = 'dashboard';
 var PKWORKTAB = 'todos';
 var PKINV_FILTERS = {status:'',cliente:'',responsable:'',vencida:'',q:''};
-var PKINV_SCAN = {stream:null,timer:null};
+var PKINV_SCAN = {stream:null,timer:null,linkComodatoId:null};
 var PK_INIT_BUSY = false;
 var PK_NEW_FRONT = '';
 var SESSION_KEY = 'sm_os_session_v1';
@@ -1444,7 +1444,7 @@ var PKSCHEMAS = {
   prospecto:[['cliente','Club / empresa','text',true],['contacto','Contacto','text'],['cargo','Cargo','text'],['ciudad','Ciudad','text'],['telefono','Teléfono','text'],['email','Email','email'],['rep','Rep','text'],['fuente','Fuente','text'],['etapa','Etapa','select',true,['por_contactar','contactado','demo_agendada','propuesta_enviada','negociacion','cerrado','perdido']],['siguiente_accion','Siguiente acción','text'],['proximo_seguimiento','Próximo seguimiento','date'],['probabilidad','Probabilidad %','number'],['monto_estimado','Monto estimado','number'],['devices_estimados','Devices estimados','number'],['notas','Notas','textarea']],
   cliente:[['nombre','Nombre','text',true],['empresa','Club / Empresa','text'],['contacto','Contacto','text'],['ciudad','Ciudad','text'],['telefono','Teléfono','text'],['email','Email','email'],['fuente','Fuente','text'],['notas','Notas','textarea']],
   venta:[['cliente','Cliente','text',true],['contacto','Contacto','text'],['rep','Rep','text'],['devices','Devices','number',true],['monto','Monto total','number',true],['saldo','Saldo pendiente','number'],['estadoVenta','Estado venta','select',true,['EN PROSPECCIÓN','VENTA INCOMPLETA','VENTA CERRADA']],['estadoPago','Estado pago','select',false,['PENDIENTE','PARCIAL','PAGADO']],['formaPago','Forma de pago','text'],['entrega','Entrega','select',false,['NO ENVIADO','ENVIADO','ENTREGADO','POR DEFINIR']],['fechaEntrega','Fecha entrega','text'],['ciudad','Ciudad','text'],['factura','Factura','select',false,['NO','SI']],['notas','Notas','textarea']],
-  comodato:[['cliente','Cliente','text',true],['contacto','Contacto','text'],['rep','Rep','text'],['devices','Devices','number',true],['estado','Estado','select',true,['EN USO','DEVUELTO','POR DEVOLVER']],['fechaEntrega','Fecha entrega','text'],['fechaDevolucion','Fecha devolución','text'],['ciudad','Ciudad','text'],['notas','Notas','textarea']],
+  comodato:[['cliente','Cliente','text',true],['contacto','Contacto','text'],['rep','Rep','text'],['devices','Devices','number',true],['device_codes','Códigos PK vinculados','text'],['estado','Estado','select',true,['EN USO','DEVUELTO','POR DEVOLVER']],['fechaEntrega','Fecha entrega','text'],['fechaDevolucion','Fecha devolución','text'],['ciudad','Ciudad','text'],['notas','Notas','textarea']],
   cobranza:[['cliente','Cliente','text',true],['rep','Rep','text'],['monto','Monto total','number'],['saldo','Saldo pendiente','number',true],['estadoVenta','Estado','text'],['accion','Acción sugerida','text']]
 };
 function pkProject(){
@@ -1551,6 +1551,15 @@ function pkNextDeviceCode(){
 }
 function pkReturnOverdue(d){
   return d && d.fecha_devolucion_prevista && !['Disponible','Vendido','Baja','Extraviado'].includes(d.status) && dayDiff(d.fecha_devolucion_prevista)<0;
+}
+function pkCodeList(v){
+  if(Array.isArray(v)) return v.map(function(x){return String(x||'').trim().toUpperCase();}).filter(Boolean);
+  return String(v||'').split(/[,;\n]+/).map(function(x){return x.trim().toUpperCase();}).filter(Boolean);
+}
+function pkCodeText(v){ return pkCodeList(v).join(', '); }
+function pkComodatoDeviceLabel(r){
+  var codes=pkCodeList(pkVal(r,'device_codes'));
+  return codes.length ? codes.map(function(c){return '<span class="chip">'+esc(c)+'</span>';}).join(' ') : '<span class="badge by_">Pendiente vincular</span>';
 }
 function pkDeviceClientName(d){ return d.cliente_nombre || (d.cliente_id ? cNm(d.cliente_id) : '—'); }
 function pkDeviceOwnerName(d){ return d.responsable_id ? uNm(d.responsable_id) : '—'; }
@@ -1709,9 +1718,9 @@ function semDevice(d){
 }
 function pkTable(tipo){
   var rows=pkRows(tipo);
-  var cols={prospecto:[['cliente','Prospecto'],['contacto','Contacto'],['rep','Rep'],['etapa','Etapa'],['siguiente_accion','Siguiente acción'],['proximo_seguimiento','Seguimiento'],['probabilidad','Prob.'],['monto_estimado','Monto']],cliente:[['nombre','Nombre'],['empresa','Club / Empresa'],['contacto','Contacto'],['ciudad','Ciudad'],['telefono','Teléfono'],['fuente','Fuente']],venta:[['cliente','Cliente'],['rep','Rep'],['devices','Devices'],['monto','Monto'],['saldo','Saldo'],['estadoVenta','Venta'],['estadoPago','Pago'],['entrega','Entrega']],comodato:[['cliente','Cliente'],['rep','Rep'],['devices','Devices'],['estado','Estado'],['fechaEntrega','Entrega'],['fechaDevolucion','Devolución'],['ciudad','Ciudad']],cobranza:[['cliente','Cliente'],['rep','Rep'],['monto','Monto'],['saldo','Saldo'],['estadoVenta','Estado'],['accion','Acción']]}[tipo]||[];
+  var cols={prospecto:[['cliente','Prospecto'],['contacto','Contacto'],['rep','Rep'],['etapa','Etapa'],['siguiente_accion','Siguiente acción'],['proximo_seguimiento','Seguimiento'],['probabilidad','Prob.'],['monto_estimado','Monto']],cliente:[['nombre','Nombre'],['empresa','Club / Empresa'],['contacto','Contacto'],['ciudad','Ciudad'],['telefono','Teléfono'],['fuente','Fuente']],venta:[['cliente','Cliente'],['rep','Rep'],['devices','Devices'],['monto','Monto'],['saldo','Saldo'],['estadoVenta','Venta'],['estadoPago','Pago'],['entrega','Entrega']],comodato:[['cliente','Cliente'],['rep','Rep'],['devices','Devices'],['device_codes','Códigos PK'],['estado','Estado'],['fechaEntrega','Entrega'],['fechaDevolucion','Devolución'],['ciudad','Ciudad']],cobranza:[['cliente','Cliente'],['rep','Rep'],['monto','Monto'],['saldo','Saldo'],['estadoVenta','Estado'],['accion','Acción']]}[tipo]||[];
   var head=cols.map(function(c){return '<th>'+esc(c[1])+'</th>';}).join('')+'<th></th>';
-  var body=rows.map(function(r){return '<tr>'+cols.map(function(c){var v=pkVal(r,c[0]); if(['monto','saldo','monto_estimado'].indexOf(c[0])>=0)v=pkMoney(v); else if(['estadoVenta','estadoPago','entrega','estado','etapa'].indexOf(c[0])>=0)v=pkStatus(v); else v=esc(v||''); return '<td>'+v+'</td>';}).join('')+'<td><div style="display:flex;gap:5px"><button class="btn btns btng" onclick="A.pkEdit(\''+r.id+'\')">Editar</button><button class="btn btns btnd" onclick="A.pkDel(\''+r.id+'\')">Eliminar</button></div></td></tr>';}).join('') || '<tr><td colspan="'+(cols.length+1)+'"><div class="empty"><p>Sin registros</p></div></td></tr>';
+  var body=rows.map(function(r){return '<tr>'+cols.map(function(c){var v=pkVal(r,c[0]); if(c[0]==='device_codes')v=pkComodatoDeviceLabel(r); else if(['monto','saldo','monto_estimado'].indexOf(c[0])>=0)v=pkMoney(v); else if(['estadoVenta','estadoPago','entrega','estado','etapa'].indexOf(c[0])>=0)v=pkStatus(v); else v=esc(v||''); return '<td>'+v+'</td>';}).join('')+'<td><div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn btns btng" onclick="A.pkEdit(\''+r.id+'\')">Editar</button>'+(tipo==='comodato'?'<button class="btn btns btnc" onclick="A.pkLinkComodato(\''+r.id+'\')">Vincular device</button>':'')+'<button class="btn btns btnd" onclick="A.pkDel(\''+r.id+'\')">Eliminar</button></div></td></tr>';}).join('') || '<tr><td colspan="'+(cols.length+1)+'"><div class="empty"><p>Sin registros</p></div></td></tr>';
   return '<div class="card"><div class="ch"><h3>'+esc((PKTABS.find(function(t){return t[0]===tipo;})||[])[1]||tipo)+'</h3><span class="chip">'+rows.length+' registro(s)</span></div><div class="tw"><table><thead><tr>'+head+'</tr></thead><tbody>'+body+'</tbody></table></div></div>';
 }
 function csvCell(v){
@@ -2597,6 +2606,69 @@ var A = {
     var ok = await del('prokicks_records',id);
     if(ok){ await refresh(); toast('Registro eliminado','g'); }
   },
+  pkLinkComodato: function(id,prefillCode){
+    if(!canUseProkicks()){ toast('Sin permiso para ProKicks','r'); return; }
+    var r=DB.prokicks_records.find(function(x){return x.id===id && x.tipo==='comodato';});
+    if(!r){ toast('Comodato no encontrado','r'); return; }
+    var data=r.data||{}, linked=pkCodeText(data.device_codes);
+    var opts='<option value="">Seleccionar disponible</option>'+DB.inventory_devices
+      .filter(function(d){return d.status==='Disponible' || pkCodeList(data.device_codes).indexOf(String(d.code||'').toUpperCase())>=0;})
+      .map(function(d){return '<option value="'+esc(d.code)+'">'+esc(d.code+' · '+(d.status||'Disponible'))+'</option>';}).join('');
+    mOpen('Vincular device a comodato · '+esc(data.cliente||'Comodato'),
+      '<div class="fg">'
+      +'<div class="hbar"><span class="dot dg"></span>Cliente: <strong>'+esc(data.cliente||'—')+'</strong> · Rep: '+esc(data.rep||'—')+' · Devices esperados: '+esc(data.devices||'—')+'</div>'
+      +'<div class="hbar"><span class="dot dy"></span>Códigos vinculados: <strong>'+(linked?esc(linked):'Pendiente')+'</strong></div>'
+      +'<div class="fr2">'+FSL('pk_link_select','Device disponible',[], '') .replace('</select>', opts+'</select>')+FLD('pk_link_code','Código PK escaneado o manual','text',prefillCode||'')+'</div>'
+      +'<div class="fr2">'+FSL('pk_link_resp','Responsable actual',[['','Sin responsable']].concat(DB.usuarios.filter(function(u){return u.activo!==false;}).map(function(u){return[u.id,u.nombre];})),userIdByName(data.rep)||'')+FLD('pk_link_auth','Autorizado por','text','')+'</div>'
+      +'<div class="fr2">'+FLD('pk_link_location','Destino / ubicación','text',data.ciudad||'')+FLD('pk_link_due','Fecha esperada devolución','date','')+'</div>'
+      +FTA('pk_link_notes','Comentario operativo','Vinculado a comodato '+(data.cliente||'')) 
+      +'<div class="operational-actions"><button class="btn btng" onclick="A.pkOpenComodatoScanner(\''+id+'\')">'+iconHtml('scan-line')+' Escanear QR</button></div>'
+      +'<div class="fa"><button class="btn btng" onclick="mClose()">Cancelar</button><button class="btn btnc" onclick="A.pkSaveComodatoLink(\''+id+'\')">Vincular y registrar salida</button></div></div>',true);
+  },
+  pkOpenComodatoScanner: async function(id){
+    PKINV_SCAN.linkComodatoId=id;
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){toast('Este navegador no permite cámara aquí','r');return;}
+    mOpen('Escanear QR para comodato','<div class="scanner-box"><video id="pk-scan-video" autoplay playsinline></video><div class="scanner-help">Apunta al QR del device. Debe contener solo el código, por ejemplo PK-0047.</div><div class="operational-actions"><button class="btn btng" onclick="A.pkCloseScanner()">Cerrar cámara</button></div></div>',true);
+    try{
+      PKINV_SCAN.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+      var video=document.getElementById('pk-scan-video'); video.srcObject=PKINV_SCAN.stream;
+      if(!('BarcodeDetector' in window)){toast('Escáner automático no disponible. Captura el código manualmente.','r');return;}
+      var detector=new BarcodeDetector({formats:['qr_code']});
+      PKINV_SCAN.timer=setInterval(async function(){
+        if(!video || video.readyState<2) return;
+        try{
+          var codes=await detector.detect(video);
+          if(codes && codes[0] && codes[0].rawValue){ A.pkHandleScannedCode(codes[0].rawValue); }
+        }catch(e){}
+      },700);
+    }catch(e){toast('No se pudo abrir la cámara','r');}
+  },
+  pkSaveComodatoLink: async function(id,scannedCode){
+    var r=DB.prokicks_records.find(function(x){return x.id===id && x.tipo==='comodato';});
+    if(!r){toast('Comodato no encontrado','r');return;}
+    var data=Object.assign({},r.data||{});
+    var code=String(scannedCode||fv('pk_link_code')||fv('pk_link_select')||'').trim().toUpperCase();
+    if(!/^PK-\d{4,}$/.test(code)){toast('Código inválido. Usa formato PK-0001','r');return;}
+    var d=DB.inventory_devices.find(function(x){return String(x.code||'').toUpperCase()===code;});
+    if(!d){toast('Device no encontrado: '+code,'r');return;}
+    if(['Vendido','Baja','Extraviado'].indexOf(d.status)>=0){toast('Ese device no puede asignarse porque está '+d.status,'r');return;}
+    var codes=pkCodeList(data.device_codes);
+    if(codes.indexOf(code)<0) codes.push(code);
+    data.device_codes=codes;
+    data.estado='EN USO';
+    data.notas=[data.notas||'', 'Device '+code+' vinculado a comodato el '+today()+'.'].filter(Boolean).join('\n');
+    var resp=fv('pk_link_resp')||d.responsable_id||userIdByName(data.rep)||null;
+    var location=fv('pk_link_location')||data.ciudad||null;
+    var due=fv('pk_link_due')||null;
+    var auth=fv('pk_link_auth')||'';
+    var note=fv('pk_link_notes')||('Vinculado a comodato '+(data.cliente||''));
+    var updatedRecord=await upd('prokicks_records',id,{data:data,updated_at:new Date().toISOString()});
+    if(!updatedRecord)return;
+    var saved=await pkInvUpdateDevice(d.id,{status:'En comodato',cliente_nombre:data.cliente||d.cliente_nombre||null,responsable_id:resp,ubicacion:location,fecha_salida:today(),fecha_devolucion_prevista:due,notas:[d.notas||'', 'Asignado a comodato '+(data.cliente||'')+'.'].filter(Boolean).join('\n'),updated_by:SES.userId});
+    if(!saved)return;
+    await pkInvInsertMovement({device_id:d.id,code:d.code,movement_type:'salida',previous_status:d.status,new_status:'En comodato',cliente_nombre:data.cliente||null,responsable_id:resp,fecha_devolucion_prevista:due,notas:[note,auth?'Autorizado por: '+auth:'','Destino: '+(location||'—'),'Comodato: '+(data.cliente||'—')].filter(Boolean).join(' · '),created_by:SES.userId});
+    mClose(); await refresh(); PKTAB='comodato'; toast('Device '+code+' vinculado al comodato ✓','g');
+  },
   pkNewDevice: function(){
     if(!canUseProkicks()){ toast('Sin permiso para Inventario ProKicks','r'); return; }
     var code=pkNextDeviceCode();
@@ -2690,7 +2762,9 @@ var A = {
   pkHandleScannedCode: function(raw){
     var code=String(raw||'').trim().toUpperCase();
     if(!/^PK-\d{4,}$/.test(code)) return;
+    var linkId=PKINV_SCAN.linkComodatoId;
     A.pkCloseScanner();
+    if(linkId){ PKINV_SCAN.linkComodatoId=null; A.pkLinkComodato(linkId,code); return; }
     var d=DB.inventory_devices.find(function(x){return String(x.code).toUpperCase()===code;});
     if(d) A.pkDeviceDetail(d.id);
     else {PKINV_FILTERS.q=code;PKTAB='inventario';render();toast('Código no encontrado: '+code,'r');}
