@@ -1246,3 +1246,130 @@ tr:hover td{background:var(--surface2)}
   .board-toggle-btn{width:100%}
   .board-filters-panel{grid-template-columns:1fr 1fr}
 }
+
+/* SM OS 2.4.22 — Modo operación: cabecera ligera y títulos de tabla fijos */
+.project-shell{
+  gap:2px;
+}
+.project-head{
+  gap:2px;
+}
+.project-titlebar{
+  min-height:38px;
+}
+.project-titlebar .project-mark{
+  width:34px;
+  height:34px;
+  border-radius:13px;
+}
+.project-titlebar h2{
+  font-size:18px;
+}
+.project-head .pdesc{
+  font-size:11px;
+  line-height:1.25;
+  max-width:calc(100vw - var(--sidebar) - 180px);
+}
+.desc-toggle{
+  font-size:10px;
+}
+.project-shell .tabs{
+  min-height:48px;
+  padding:0 2px;
+  gap:5px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.project-shell .tabs::-webkit-scrollbar{
+  display:none;
+}
+.project-shell .tab{
+  min-height:38px;
+  padding:6px 11px;
+  border-radius:11px;
+  gap:6px;
+  font-size:12px;
+}
+.project-shell .tab .tab-icon{
+  width:24px;
+  height:24px;
+  border-radius:9px;
+}
+.project-shell .tab .tab-icon svg{
+  width:14px;
+  height:14px;
+}
+.project-kpis{
+  margin:0 0 6px;
+  border-radius:12px;
+  background:rgba(255,255,255,.78);
+}
+.project-kpis .sc{
+  min-height:34px;
+  padding:5px 11px;
+}
+.project-kpis .sl{
+  font-size:8.5px;
+}
+.project-kpis .sn{
+  font-size:15px;
+}
+.project-kpis .sn.compact-name{
+  font-size:12px;
+}
+.board-title{
+  margin:0 0 6px;
+}
+.board-title h2{
+  font-size:16px;
+}
+.board-title .btn{
+  min-height:36px;
+  padding:7px 14px;
+  border-radius:13px;
+}
+.board-filterbar{
+  margin:0 0 8px;
+}
+.board-filterbar-main{
+  min-height:38px;
+  padding:5px 7px;
+  border-radius:14px;
+}
+.board-filterbar-icon{
+  width:26px;
+  height:26px;
+  border-radius:10px;
+}
+.board-toggle-btn{
+  min-height:32px;
+  padding:5px 12px;
+}
+.sticky-board{
+  border-radius:12px!important;
+}
+.sticky-board thead,
+.sticky-board thead th,
+.tw thead th{
+  top:47px;
+}
+.sticky-board thead th{
+  z-index:40!important;
+  background:rgba(255,255,255,.96)!important;
+  backdrop-filter:blur(12px);
+  box-shadow:0 2px 0 var(--line2),0 10px 20px rgba(11,37,71,.08)!important;
+}
+.operational-table th{
+  padding-top:9px;
+  padding-bottom:9px;
+}
+.operational-table td{
+  padding-top:13px;
+  padding-bottom:13px;
+}
+@media(max-width:900px){
+  .sticky-board thead,
+  .sticky-board thead th,
+  .tw thead th{top:0}
+  .project-head .pdesc{max-width:80vw}
+}
