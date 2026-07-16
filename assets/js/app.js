@@ -1011,7 +1011,7 @@ function operationalBoard(p,limit){
   tasks = boardFilterTasks(tasks,p);
   if(limit) tasks = tasks.slice(0,limit);
   var filterBar = boardFiltersHtml(allTasks,tasks,p);
-  if(!tasks.length) return filterBar+'<div class="empty"><p>Sin registros con esos filtros</p></div>';
+  if(!tasks.length) return filterBar+'<div class="empty"><p>Sin tareas con esos filtros</p></div>';
   var rows = tasks.map(function(t){
     var h=crmHealth(t), lc=lastComment(t), cCount=DB.comentarios.filter(function(c){return c.tarea_id===t.id;}).length;
     var pk=isProkicksProject(p);
@@ -1032,7 +1032,7 @@ function operationalBoard(p,limit){
   var tableClass = 'operational-table' + (ofunamBoard ? ' ofunam-table' : '');
   var commentHead = showCommentCol ? '<th>Último comentario</th>' : '';
   var groupHead = ofunamBoard ? '' : '<th>'+(isProkicksProject(p)?'Frente':'Grupo')+'</th>';
-  return filterBar+frontStrip+'<div class="card sticky-board" style="padding:0"><div class="tw"><table class="'+tableClass+'"><thead><tr>'+groupHead+'<th>'+(isProkicksProject(p)?'Tarea':'Registro')+'</th><th>Estado</th><th>Siguiente acción</th><th>Seguimiento</th><th>Resp.</th><th>Alerta</th>'+commentHead+'<th>Acciones</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+  return filterBar+frontStrip+'<div class="card sticky-board" style="padding:0"><div class="tw"><table class="'+tableClass+'"><thead><tr>'+groupHead+'<th>Tarea</th><th>Estado</th><th>Siguiente acción</th><th>Seguimiento</th><th>Resp.</th><th>Alerta</th>'+commentHead+'<th>Acciones</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
 }
 function projectReportHtml(pid){
   var p=xid(DB.proyectos,pid); if(!p) return '<div class="card"><div class="empty"><p>Selecciona un proyecto</p></div></div>';
@@ -1185,9 +1185,9 @@ function projectCard(p,compact){
 function projectWorkspace(p){
   var s=projectStats(p);
   var tab = PTAB || 'tareas';
-  var mainTitle = isProkicksProject(p) ? 'Plan de trabajo ProKicks' : (isOfunamProject(p) ? 'Grupos y registros' : 'Registros');
-  var mainButton = isProkicksProject(p) ? '<div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn btng" onclick="A.pkManageFronts(\''+p.id+'\')">+ Frente</button><button class="btn btng" onclick="A.nt(\''+p.id+'\')">+ Tarea</button><button class="btn btnc" onclick="PKTAB=\'dashboard\';nav(\'prokicks\')">Abrir operación ProKicks</button></div>' : '<button class="btn btnc" onclick="A.nt(\''+p.id+'\')">+ Registro</button>';
-  var board = '<div class="sg project-kpis"><div class="sc"><div class="sl">Registros</div><div class="sn">'+s.tasks.length+'</div></div><div class="sc y"><div class="sl">Sin acción</div><div class="sn">'+s.noNext+'</div></div><div class="sc r"><div class="sl">Riesgos</div><div class="sn">'+(s.overdue+s.noNext)+'</div></div><div class="sc"><div class="sl">Responsable</div><div class="sn compact-name">'+esc(uNm(p.owner_id))+'</div></div></div>'
+  var mainTitle = isProkicksProject(p) ? 'Plan de trabajo ProKicks' : (isOfunamProject(p) ? 'Grupos y tareas' : 'Tareas');
+  var mainButton = isProkicksProject(p) ? '<div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn btng" onclick="A.pkManageFronts(\''+p.id+'\')">+ Frente</button><button class="btn btng" onclick="A.nt(\''+p.id+'\')">+ Tarea</button><button class="btn btnc" onclick="PKTAB=\'dashboard\';nav(\'prokicks\')">Abrir operación ProKicks</button></div>' : '<button class="btn btnc" onclick="A.nt(\''+p.id+'\')">+ Tarea</button>';
+  var board = '<div class="sg project-kpis"><div class="sc"><div class="sl">Tareas</div><div class="sn">'+s.tasks.length+'</div></div><div class="sc y"><div class="sl">Sin acción</div><div class="sn">'+s.noNext+'</div></div><div class="sc r"><div class="sl">Riesgos</div><div class="sn">'+(s.overdue+s.noNext)+'</div></div><div class="sc"><div class="sl">Responsable</div><div class="sn compact-name">'+esc(uNm(p.owner_id))+'</div></div></div>'
     +'<div class="sh board-title"><h2>'+mainTitle+'</h2>'+mainButton+'</div>'
     +operationalBoard(p);
   var body = tab==='mando'?projectCommandCenterHtml(p)
