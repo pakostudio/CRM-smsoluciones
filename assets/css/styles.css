@@ -1373,3 +1373,67 @@ tr:hover td{background:var(--surface2)}
   .tw thead th{top:0}
   .project-head .pdesc{max-width:80vw}
 }
+
+/* SM OS 2.4.23 — Corrección: tabla sin traslape y cabecera menos invasiva */
+.project-shell .project-kpis{
+  display:none;
+}
+.project-head{
+  margin-bottom:0;
+}
+.project-head>div:nth-child(2){
+  display:none!important;
+}
+.project-shell .tabs{
+  min-height:40px;
+  margin-top:2px;
+}
+.project-shell .tab{
+  min-height:34px;
+  padding:5px 10px;
+}
+.board-title{
+  display:flex;
+  align-items:center;
+  min-height:38px;
+  margin:2px 0 6px;
+}
+.board-title h2{
+  font-size:15px;
+}
+.board-title .btn{
+  min-height:34px;
+  padding:6px 13px;
+}
+.board-filterbar-main{
+  min-height:34px;
+  padding:4px 7px;
+}
+.sticky-board{
+  overflow:hidden!important;
+}
+.sticky-board .tw{
+  max-height:calc(100vh - 315px)!important;
+  overflow:auto!important;
+}
+.sticky-board thead,
+.sticky-board thead th,
+.tw thead th{
+  position:sticky!important;
+  top:0!important;
+}
+.sticky-board thead th{
+  z-index:30!important;
+  background:#fff!important;
+  backdrop-filter:none!important;
+  box-shadow:0 2px 0 var(--line2),0 6px 14px rgba(11,37,71,.06)!important;
+}
+.operational-table td{
+  padding-top:12px;
+  padding-bottom:12px;
+}
+@media(max-width:900px){
+  .sticky-board .tw{
+    max-height:calc(100vh - 240px)!important;
+  }
+}
