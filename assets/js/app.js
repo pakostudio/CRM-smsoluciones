@@ -1014,7 +1014,7 @@ function operationalBoard(p,limit){
       +'<td>'+esc(boardOwnerName(t,p))+'</td>'
       +'<td>'+alert+'</td>'
       +(showCommentCol?'<td style="min-width:190px">'+(lc?'<div style="font-size:12px;color:var(--ink)">'+esc(String(lc.texto||'').slice(0,70))+'</div><div style="font-size:11px;color:var(--muted)">'+cCount+' comentario(s)</div>':'<span style="color:var(--muted)">Sin comentarios</span>')+'</td>':'')
-      +'<td><div class="operational-actions"><button class="btn btns btnc" onclick="A.quickEdit(\''+t.id+'\')">Editar rápido</button><button class="btn btns btng" onclick="A.manageTask(\''+t.id+'\')">Gestionar</button></div></td>'
+      +'<td><div class="operational-actions"><button class="btn btns btnc op-action op-edit" title="Editar rápido" aria-label="Editar rápido" onclick="A.quickEdit(\''+t.id+'\')">'+iconHtml('pencil-line')+'<span>Editar</span></button><button class="btn btns btng op-action op-manage" title="Gestionar tarea" aria-label="Gestionar tarea" onclick="A.manageTask(\''+t.id+'\')">'+iconHtml('sliders-horizontal')+'<span>Gestionar</span></button></div></td>'
       +'</tr>';
   }).join('');
   var frontStrip=isProkicksProject(p)?'<div class="front-strip">'+groupsForProject(p).map(function(g,i){var count=tasks.filter(function(t){return taskGroup(t)===g;}).length;return '<div class="front-summary"><strong>'+esc(g)+'</strong><span class="badge bx_">'+count+'</span><button class="btn btng" onclick="A.pkTaskForFront(\''+p.id+'\','+i+')">+ Tarea</button></div>';}).join('')+'</div>':'';
