@@ -1148,3 +1148,101 @@ tr:hover td{background:var(--surface2)}
   .board-filters{grid-template-columns:1fr 1fr}
   .operational-table{min-width:980px!important}
 }
+
+/* SM OS 2.4.21 — Filtros ligeros, no bloquean la vista */
+.board-filterbar{
+  margin:4px 0 12px;
+}
+.board-filterbar-main{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-height:44px;
+  padding:7px 8px 7px 10px;
+  border:1px solid rgba(11,37,71,.08);
+  border-radius:16px;
+  background:rgba(255,255,255,.74);
+  box-shadow:0 8px 22px rgba(11,37,71,.05);
+  backdrop-filter:blur(10px);
+}
+.board-filterbar-left{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:800;
+}
+.board-filterbar-left strong{
+  color:var(--ink);
+  font-size:13px;
+  white-space:nowrap;
+}
+.board-filterbar-left>span:last-child{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.board-filterbar-icon{
+  width:30px;
+  height:30px;
+  border-radius:11px;
+  display:inline-grid;
+  place-items:center;
+  flex:0 0 auto;
+  color:#fff;
+  background:linear-gradient(135deg,#0ea5e9,#075985);
+  box-shadow:0 8px 18px rgba(14,165,233,.18);
+}
+.board-filterbar-icon svg{
+  width:16px;
+  height:16px;
+  stroke-width:2.5;
+}
+.board-toggle-btn{
+  min-width:98px;
+  border-radius:12px;
+  background:#fff;
+}
+.board-toggle-btn svg{
+  width:15px;
+  height:15px;
+}
+.board-filters-panel{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(112px,1fr)) auto;
+  gap:7px;
+  align-items:end;
+  margin-top:8px;
+  padding:8px;
+  border:1px solid rgba(11,37,71,.08);
+  border-radius:14px;
+  background:rgba(255,255,255,.86);
+  box-shadow:0 10px 24px rgba(11,37,71,.06);
+}
+.board-filters-panel .board-filter label{
+  font-size:8.5px;
+}
+.board-filters-panel .board-filter select{
+  min-height:34px;
+  padding:6px 9px;
+}
+.board-clear-btn{
+  min-height:34px;
+  border-radius:11px;
+}
+.board-filterbar+.front-strip,
+.board-filterbar+.card,
+.front-strip+.card{
+  margin-top:0;
+}
+@media(max-width:1180px){
+  .board-filters-panel{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:700px){
+  .board-filterbar-main{align-items:flex-start;flex-direction:column}
+  .board-toggle-btn{width:100%}
+  .board-filters-panel{grid-template-columns:1fr 1fr}
+}

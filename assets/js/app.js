@@ -86,6 +86,7 @@ var SESSION_KEY = 'sm_os_session_v1';
 var PROJECT_QUERY = '';
 var PROJECT_DESC_EXPANDED = false;
 var BOARD_FILTERS = {estado:'',prioridad:'',accion:'',seguimiento:'',entrega:'',responsable:''};
+var BOARD_FILTERS_OPEN = false;
 var CLIENT_PROJECT_FOCUS = true; // Privacidad cliente: al estar dentro de un proyecto, la navegación lateral solo muestra ese proyecto.
 
 /* ── UTILS ── */
@@ -978,14 +979,24 @@ function boardFiltersHtml(tasks,filtered,p){
   tasks.forEach(function(t){var o=boardOwnerName(t,p); if(o && owners.indexOf(o)<0) owners.push(o);});
   owners.sort(function(a,b){return a.localeCompare(b,'es');});
   var ownerOpts = [['','Todos']].concat(owners.map(function(o){return [o,o];}));
-  return '<div class="board-filters">'
+  var active = Object.keys(BOARD_FILTERS).filter(function(k){return !!BOARD_FILTERS[k];});
+  var labels = {estado:'Status',prioridad:'Prioridad',accion:'Acción',seguimiento:'Seguimiento',entrega:'Entrega',responsable:'Resp.'};
+  var activeText = active.length ? active.map(function(k){return labels[k]+': '+BOARD_FILTERS[k];}).join(' · ') : 'Sin filtros activos';
+  var controls = '<div class="board-filters-panel">'
     +boardFilterSelect('Status','estado',[['','Todos'],['pendiente','Pendiente'],['en_proceso','En proceso'],['en_revision','En revisión'],['aprobada','Aprobada'],['terminada','Terminada']],BOARD_FILTERS.estado)
     +boardFilterSelect('Prioridad','prioridad',[['','Todas'],['baja','Baja'],['media','Media'],['alta','Alta'],['critica','Crítica']],BOARD_FILTERS.prioridad)
     +boardFilterSelect('Última acción','accion',[['','Todas'],['sin_accion','Sin acción'],['recordatorio','Recordatorio'],['dalia','Dalia'],['espera','En espera'],['propuesta','Propuesta / VoBo'],['otra','Otra']],BOARD_FILTERS.accion)
     +boardFilterSelect('Seguimiento','seguimiento',[['','Todos'],['vencido','Vencido'],['hoy','Hoy'],['semana','Próximos 7 días'],['sin_fecha','Sin fecha'],['futuro','Más adelante']],BOARD_FILTERS.seguimiento)
     +boardFilterSelect('Entrega','entrega',[['','Todas'],['vencido','Vencidas'],['hoy','Hoy'],['semana','Próximos 7 días'],['sin_fecha','Sin fecha'],['futuro','Más adelante']],BOARD_FILTERS.entrega)
     +boardFilterSelect('Responsable','responsable',ownerOpts,BOARD_FILTERS.responsable)
-    +'<div><div class="board-filter-count">'+filtered.length+' de '+tasks.length+'</div><button class="btn btns btng" onclick="A.clearBoardFilters()">Limpiar</button></div>'
+    +'<button class="btn btns btng board-clear-btn" onclick="A.clearBoardFilters()">Limpiar</button>'
+    +'</div>';
+  return '<div class="board-filterbar '+(BOARD_FILTERS_OPEN?'open':'')+'">'
+    +'<div class="board-filterbar-main">'
+    +'<div class="board-filterbar-left"><span class="board-filterbar-icon">'+iconHtml('list-filter')+'</span><strong>'+filtered.length+' de '+tasks.length+'</strong><span>'+esc(activeText)+'</span></div>'
+    +'<button class="btn btns btng board-toggle-btn" onclick="A.toggleBoardFilters()">'+iconHtml(BOARD_FILTERS_OPEN?'chevron-up':'sliders-horizontal')+' '+(BOARD_FILTERS_OPEN?'Ocultar':'Filtros')+'</button>'
+    +'</div>'
+    +(BOARD_FILTERS_OPEN?controls:'')
     +'</div>';
 }
 function operationalBoard(p,limit){
@@ -2007,8 +2018,13 @@ var A = {
     BOARD_FILTERS[key]=value||'';
     render();
   },
+  toggleBoardFilters: function(){
+    BOARD_FILTERS_OPEN = !BOARD_FILTERS_OPEN;
+    render();
+  },
   clearBoardFilters: function(){
     BOARD_FILTERS={estado:'',prioridad:'',accion:'',seguimiento:'',entrega:'',responsable:''};
+    BOARD_FILTERS_OPEN=false;
     render();
   },
   pkManageFronts: function(pid){
