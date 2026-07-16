@@ -692,6 +692,20 @@ function mOpen(tit,html,wide){
 function mClose(){ document.getElementById('mbg').classList.remove('open'); }
 document.getElementById('mcls').onclick = mClose;
 document.getElementById('mbg').addEventListener('click',function(e){ if(e.target.id==='mbg') mClose(); });
+var SM_CONFIRM_RESOLVE = null;
+function smConfirm(title,message,okLabel){
+  return new Promise(function(resolve){
+    SM_CONFIRM_RESOLVE = resolve;
+    mOpen(title,
+      '<div class="confirm-ui"><div class="confirm-icon">'+iconHtml('shield-alert')+'</div><div><p>'+esc(message)+'</p><div class="fa"><button class="btn btng" onclick="smConfirmDone(false)">Cancelar</button><button class="btn btnd" onclick="smConfirmDone(true)">'+esc(okLabel||'Confirmar')+'</button></div></div></div>');
+  });
+}
+function smConfirmDone(ok){
+  var resolve = SM_CONFIRM_RESOLVE;
+  SM_CONFIRM_RESOLVE = null;
+  mClose();
+  setTimeout(function(){ if(resolve) resolve(!!ok); },0);
+}
 
 /* ── FORM HELPERS ── */
 function fv(id){ var el=document.getElementById('f_'+id); return el?el.value:''; }
@@ -2173,7 +2187,7 @@ var A = {
   pickColor: function(el,color){ document.getElementById('f_clr').value=color; el.parentNode.querySelectorAll('.color-choice').forEach(function(x){x.classList.remove('selected');}); el.classList.add('selected'); },
   baja: async function(id){
     if(!adm()){toast('Solo administrador puede dar de baja proyectos','r');return;}
-    if(!confirm('¿Dar de baja este proyecto? Se eliminará permanentemente.')) return;
+    if(!await smConfirm('Dar de baja proyecto','Se eliminará permanentemente.','Dar de baja')) return;
     var ok = await del('proyectos',id);
     if(ok){ await refresh(); toast('Proyecto dado de baja ✓','g'); }
   },
@@ -2442,7 +2456,7 @@ var A = {
   },
   dt: async function(id){
     if(!adm()){toast('Solo administrador puede eliminar tareas','r');return;}
-    if(!confirm('¿Eliminar definitivamente esta tarea? Se eliminarán también comentarios, microtareas y entregables. Esta acción no se puede deshacer.')) return;
+    if(!await smConfirm('Eliminar tarea','Se eliminarán también comentarios, microtareas y entregables. Esta acción no se puede deshacer.','Eliminar tarea')) return;
     await sb.from('comentarios').delete().eq('tarea_id',id);
     await sb.from('subtareas').delete().eq('tarea_id',id);
     await sb.from('entregables').delete().eq('tarea_id',id);
@@ -2642,7 +2656,7 @@ var A = {
     if(r){ mClose(); await refresh(); PKTAB=tipo; toast(id?'Registro actualizado':'Registro creado ✓','g'); }
   },
   pkDel: async function(id){
-    if(!confirm('¿Eliminar este registro de ProKicks?')) return;
+    if(!await smConfirm('Eliminar registro ProKicks','Este registro se eliminará de la operación ProKicks.','Eliminar')) return;
     var ok = await del('prokicks_records',id);
     if(ok){ await refresh(); toast('Registro eliminado','g'); }
   },
@@ -3067,8 +3081,8 @@ function restoreSession(){
 
 document.getElementById('btn-login').addEventListener('click', doLogin);
 document.getElementById('f-pin').addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
-function doLogout(){
-  if(!confirm('¿Cerrar sesión?')) return;
+async function doLogout(){
+  if(!await smConfirm('Cerrar sesión','¿Quieres salir del CRM en este navegador?','Cerrar sesión')) return;
   clearSession();
   SES=null; SELUID='';
   document.body.classList.remove('logged');
