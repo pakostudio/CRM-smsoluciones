@@ -1502,3 +1502,62 @@ tr:hover td{background:var(--surface2)}
   transform:translateY(-2px);
   filter:saturate(1.08);
 }
+
+/* SM OS 2.4.26 — Acciones sobrias y simétricas */
+.operational-actions{
+  display:grid!important;
+  grid-template-columns:1fr;
+  gap:6px!important;
+  justify-items:stretch;
+}
+.operational-actions .op-action{
+  width:86px!important;
+  min-width:86px!important;
+  height:34px!important;
+  border-radius:12px!important;
+  display:flex!important;
+  flex-direction:row!important;
+  gap:6px!important;
+  padding:0 9px!important;
+  font-size:10px!important;
+  justify-content:flex-start!important;
+  box-shadow:none!important;
+}
+.operational-actions .op-action:before{
+  display:none!important;
+}
+.operational-actions .op-icon{
+  width:20px!important;
+  height:20px!important;
+  border-radius:8px!important;
+  flex:0 0 auto;
+}
+.operational-actions .op-icon svg{
+  width:13px!important;
+  height:13px!important;
+}
+.operational-actions .op-edit{
+  background:#fff!important;
+  color:#0b2547!important;
+  border:1px solid rgba(11,37,71,.14)!important;
+}
+.operational-actions .op-edit .op-icon{
+  background:#eff6ff!important;
+  color:#0284c7!important;
+  box-shadow:none!important;
+}
+.operational-actions .op-manage{
+  background:#0ea5e9!important;
+  color:#fff!important;
+  border:1px solid #0ea5e9!important;
+}
+.operational-actions .op-manage .op-icon{
+  background:rgba(255,255,255,.18)!important;
+  color:#fff!important;
+  box-shadow:none!important;
+}
+.operational-actions .op-action:hover{
+  transform:none!important;
+  filter:none!important;
+  box-shadow:0 6px 14px rgba(11,37,71,.08)!important;
+}
